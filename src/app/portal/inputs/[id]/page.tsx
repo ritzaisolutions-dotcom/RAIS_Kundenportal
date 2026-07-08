@@ -18,7 +18,7 @@ export default async function PortalInputDetailPage({
       <div className="bg-surface border border-border rounded-lg p-6">
         <h2 className="text-2xl">{request.title}</h2>
         {request.description_md ? <p className="text-muted mt-2 whitespace-pre-wrap">{request.description_md}</p> : null}
-        {request.due_date ? <p className="text-sm mt-3">Faellig am: {request.due_date}</p> : null}
+        {request.due_date ? <p className="text-sm mt-3">Fällig am: {request.due_date}</p> : null}
       </div>
 
       <form
@@ -44,7 +44,7 @@ export default async function PortalInputDetailPage({
                 <textarea id={field.key} name={field.key} required={field.required} rows={5} />
               ) : field.type === "select" ? (
                 <select id={field.key} name={field.key} required={field.required}>
-                  <option value="">Bitte waehlen</option>
+                  <option value="">Bitte wählen</option>
                   {(field.options ?? []).map((option) => (
                     <option key={option} value={option}>
                       {option}

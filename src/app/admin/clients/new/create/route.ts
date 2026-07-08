@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   let logoPath: string | null = null;
   if (logo instanceof File && logo.size > 0) {
     const extension = logo.name.includes(".") ? logo.name.split(".").pop() : "png";
-    logoPath = `logos/${slug}-${Date.now()}.${extension}`;
+    logoPath = `${slug}-${Date.now()}.${extension}`;
     const { error: logoError } = await admin.storage.from("logos").upload(logoPath, logo, {
       contentType: logo.type,
       upsert: true,
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     .insert({
       name,
       slug,
-      logo_path: logoPath ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${logoPath}` : null,
+      logo_path: logoPath ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${logoPath}` : null,
       primary_contact_email: primaryContactEmail,
     })
     .select("id")
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   });
 
   if (authError || !createdUser.user) {
-    return NextResponse.redirect(new URL("/admin/clients/new?error=User+konnte+nicht+angelegt+werden", request.url));
+    return NextResponse.redirect(new URL("/admin/clients/new?error=Benutzer+konnte+nicht+angelegt+werden", request.url));
   }
 
   const { error: clientUserError } = await portal.from("client_users").insert({
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
   });
 
   if (clientUserError) {
-    return NextResponse.redirect(new URL("/admin/clients/new?error=Zuordnung+des+Users+fehlgeschlagen", request.url));
+    return NextResponse.redirect(new URL("/admin/clients/new?error=Zuordnung+des+Benutzers+fehlgeschlagen", request.url));
   }
 
   const successUrl = new URL("/admin/clients/new", request.url);

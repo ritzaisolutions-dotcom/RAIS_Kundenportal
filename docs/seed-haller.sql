@@ -60,7 +60,7 @@ join (
       'freetext',
       null,
       null,
-      'Bitte die finalen Impressums- und Datenschutzangaben fuer LP1 liefern.'
+      'Bitte die finalen Impressums- und Datenschutzangaben für LP1 liefern.'
     )
 ) as seed(title, kind, form_schema, due_date, description_md) on true
 where c.slug = 'haller'

@@ -1,4 +1,4 @@
-# Resend Templates (Deutsch)
+# E-Mail Templates (Deutsch)
 
 ## report_published
 
@@ -8,24 +8,24 @@
 
 ```html
 <p>Guten Tag,</p>
-<p>es wurde ein neuer Status-Report fuer Ihr Projekt veroeffentlicht.</p>
+<p>es wurde ein neuer Status-Report für Ihr Projekt veröffentlicht.</p>
 <p><a href="https://portal.ritz-ai.solutions/portal/reports/{{report_id}}">Zum Report</a></p>
-<p>Viele Gruesse<br />RAIS</p>
+<p>Viele Grüße<br />RAIS</p>
 ```
 
 ## input_requested
 
 - Betreff: `Neue Input-Anfrage im RAIS Portal`
-- Vorschautext: `Bitte Rueckmeldung bis zur Frist.`
+- Vorschautext: `Bitte Rückmeldung bis zur Frist.`
 - HTML:
 
 ```html
 <p>Guten Tag,</p>
-<p>es wurde eine neue Input-Anfrage fuer Sie erstellt:</p>
+<p>es wurde eine neue Input-Anfrage für Sie erstellt:</p>
 <p><strong>{{request_title}}</strong></p>
-<p>Frist: {{due_date}}</p>
+<p>Fälligkeitsdatum: {{due_date}}</p>
 <p><a href="https://portal.ritz-ai.solutions/portal/inputs/{{request_id}}">Zur Anfrage</a></p>
-<p>Viele Gruesse<br />RAIS</p>
+<p>Viele Grüße<br />RAIS</p>
 ```
 
 ## input_submitted (Kevin Alert)

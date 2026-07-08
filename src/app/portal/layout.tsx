@@ -15,8 +15,8 @@ export default async function PortalLayout({ children }: { children: ReactNode }
       title={client?.name ?? "Kundenportal"}
       subtitle="Ihre Status-Reports und offenen Input-Anfragen"
       links={[
-        { href: "/portal/reports", label: "Reports" },
-        { href: "/portal/inputs", label: "Inputs" },
+        { href: "/portal/reports", label: "Status-Reports" },
+        { href: "/portal/inputs", label: "Input-Anfragen" },
       ]}
       logoUrl={client?.logo_path ?? null}
     >

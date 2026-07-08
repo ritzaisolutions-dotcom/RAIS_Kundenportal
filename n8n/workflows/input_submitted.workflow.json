@@ -30,22 +30,31 @@
     },
     {
       "parameters": {
-        "url": "https://api.resend.com/emails",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "Bearer {{$env.RESEND_API_KEY}}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
-        "sendBody": true,
-        "jsonBody": "={\"from\":\"portal@mail.ritz-ai.solutions\",\"to\":[\"kevin@ritz-ai.solutions\"],\"subject\":\"Neue Input-Submission eingegangen\",\"html\":\"<p>Request-ID: {{$json.body.record.request_id}}</p><p>Client-ID: {{$json.body.record.client_id}}</p>\"}"
+        "fromEmail": "portal@mail.ritz-ai.solutions",
+        "toEmail": "kevin@ritz-ai.solutions",
+        "subject": "Neue Input-Submission eingegangen",
+        "emailType": "html",
+        "message": "={{\"<p>Neue Submission im RAIS Portal.</p><ul><li>Request-ID: \" + $json.body.record.request_id + \"</li><li>Client-ID: \" + $json.body.record.client_id + \"</li></ul>\"}}"
       },
       "id": "sendKevinMail",
       "name": "Alert Kevin",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
       "position": [730, 250]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"error\":\"unauthorized\"}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "unauthorizedResponse",
+      "name": "Unauthorized 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [730, 420]
     }
   ],
   "connections": {
@@ -53,7 +62,10 @@
       "main": [[{ "node": "Secret Check", "type": "main", "index": 0 }]]
     },
     "Secret Check": {
-      "main": [[{ "node": "Alert Kevin", "type": "main", "index": 0 }], []]
+      "main": [
+        [{ "node": "Alert Kevin", "type": "main", "index": 0 }],
+        [{ "node": "Unauthorized 401", "type": "main", "index": 0 }]
+      ]
     }
   }
 }

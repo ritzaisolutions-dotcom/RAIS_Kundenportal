@@ -30,22 +30,46 @@
     },
     {
       "parameters": {
-        "url": "https://api.resend.com/emails",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            { "name": "Authorization", "value": "Bearer {{$env.RESEND_API_KEY}}" },
-            { "name": "Content-Type", "value": "application/json" }
-          ]
-        },
-        "sendBody": true,
-        "jsonBody": "={\"from\":\"portal@mail.ritz-ai.solutions\",\"to\":[\"{{$json.body.record.primary_contact_email}}\"],\"subject\":\"Neue Input-Anfrage im RAIS Portal\",\"html\":\"<p>Neue Anfrage: {{$json.body.record.title}}</p><p><a href='https://portal.ritz-ai.solutions/portal/inputs/{{$json.body.record.id}}'>Zur Anfrage</a></p>\"}"
+        "operation": "executeQuery",
+        "query": "select primary_contact_email from portal.clients where id = $1 limit 1;",
+        "options": {},
+        "additionalFields": {
+          "queryParams": "={{[$json.body.record.client_id]}}"
+        }
       },
-      "id": "sendResend",
-      "name": "Send Resend Mail",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4,
-      "position": [730, 250]
+      "id": "loadClientEmail",
+      "name": "Load Client Email",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [700, 250]
+    },
+    {
+      "parameters": {
+        "fromEmail": "portal@mail.ritz-ai.solutions",
+        "toEmail": "={{$json.primary_contact_email}}",
+        "subject": "Neue Input-Anfrage im RAIS Portal",
+        "emailType": "html",
+        "message": "={{\"<p>Guten Tag,</p><p>es wurde eine neue Input-Anfrage für Sie erstellt:</p><p><strong>\" + $('Supabase Webhook').item.json.body.record.title + \"</strong></p><p>Fälligkeitsdatum: \" + ($('Supabase Webhook').item.json.body.record.due_date ?? 'ohne Frist') + \"</p><p><a href='https://portal.ritz-ai.solutions/portal/inputs/\" + $('Supabase Webhook').item.json.body.record.id + \"'>Zur Anfrage</a></p><p>Viele Grüße<br/>RAIS</p>\"}}"
+      },
+      "id": "sendEmail",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [940, 250]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"error\":\"unauthorized\"}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "unauthorizedResponse",
+      "name": "Unauthorized 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [700, 420]
     }
   ],
   "connections": {
@@ -53,7 +77,13 @@
       "main": [[{ "node": "Secret Check", "type": "main", "index": 0 }]]
     },
     "Secret Check": {
-      "main": [[{ "node": "Send Resend Mail", "type": "main", "index": 0 }], []]
+      "main": [
+        [{ "node": "Load Client Email", "type": "main", "index": 0 }],
+        [{ "node": "Unauthorized 401", "type": "main", "index": 0 }]
+      ]
+    },
+    "Load Client Email": {
+      "main": [[{ "node": "Send Email", "type": "main", "index": 0 }]]
     }
   }
 }

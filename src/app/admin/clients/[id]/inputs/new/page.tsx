@@ -49,7 +49,7 @@ export default async function NewInputRequestPage({
         </div>
         <div>
           <label className="block text-sm mb-1" htmlFor="due_date">
-            Due Date
+            Fälligkeitsdatum
           </label>
           <input id="due_date" name="due_date" type="date" />
         </div>
@@ -58,8 +58,8 @@ export default async function NewInputRequestPage({
             Status
           </label>
           <select id="status" name="status" defaultValue="draft">
-            <option value="draft">draft</option>
-            <option value="open">open</option>
+            <option value="draft">Entwurf</option>
+            <option value="open">Offen</option>
           </select>
         </div>
         {resolvedSearch.error ? <p className="text-sm text-red-600">{resolvedSearch.error}</p> : null}

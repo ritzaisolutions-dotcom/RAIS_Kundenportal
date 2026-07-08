@@ -28,7 +28,7 @@ export function AppShell({ title, subtitle, links, children, logoUrl }: AppShell
           </div>
           <form action="/auth/signout" method="post">
             <button type="submit" className="border border-border bg-white rounded-lg px-3 py-2 text-sm">
-              Logout
+              Abmelden
             </button>
           </form>
         </div>

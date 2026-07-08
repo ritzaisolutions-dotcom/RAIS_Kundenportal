@@ -14,7 +14,7 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "RAIS Client Portal",
-  description: "Kundenportal fuer Reports und Input-Anfragen",
+  description: "Kundenportal für Reports und Input-Anfragen",
 };
 
 export default function RootLayout({

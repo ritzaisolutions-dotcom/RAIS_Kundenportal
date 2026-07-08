@@ -13,7 +13,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.redirect(new URL("/login", request.url));
 
-  const portal = admin.schema("portal");
+  const portal = supabase.schema("portal");
   const { data: clientUser } = await portal.from("client_users").select("client_id").eq("user_id", user.id).maybeSingle();
   if (!clientUser?.client_id) return NextResponse.redirect(new URL("/login", request.url));
 
@@ -34,25 +34,42 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const formData = await request.formData();
   const payload: Record<string, string | null> = {};
   const filePaths: string[] = [];
+  const validationErrors: string[] = [];
 
   if (inputRequest.kind === "freetext") {
-    payload.freetext = String(formData.get("freetext") ?? "");
+    const freetext = String(formData.get("freetext") ?? "").trim();
+    if (!freetext) {
+      validationErrors.push("Bitte geben Sie eine Antwort ein.");
+    }
+    payload.freetext = freetext;
   } else {
     const fields = parseFormSchema(inputRequest.form_schema);
     for (const field of fields) {
       if (field.type === "file") {
         const file = formData.get(field.key);
+        if (field.required && (!(file instanceof File) || file.size === 0)) {
+          validationErrors.push(`Bitte laden Sie eine Datei für "${field.label}" hoch.`);
+          continue;
+        }
         if (file instanceof File && file.size > 0) {
           const filePath = `${clientUser.client_id}/${id}/${Date.now()}-${file.name}`;
-          const { error } = await admin.storage.from("submissions").upload(filePath, file, {
+          const { error } = await supabase.storage.from("submissions").upload(filePath, file, {
             contentType: file.type,
             upsert: false,
           });
-          if (!error) filePaths.push(filePath);
+          if (error) {
+            validationErrors.push(`Datei-Upload fehlgeschlagen: ${field.label}`);
+          } else {
+            filePaths.push(filePath);
+          }
         }
         continue;
       }
-      payload[field.key] = String(formData.get(field.key) ?? "");
+      const value = String(formData.get(field.key) ?? "").trim();
+      if (field.required && !value) {
+        validationErrors.push(`Bitte füllen Sie das Feld "${field.label}" aus.`);
+      }
+      payload[field.key] = value;
     }
   }
 
@@ -60,11 +77,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   for (const attachment of extraAttachments) {
     if (!(attachment instanceof File) || attachment.size === 0) continue;
     const filePath = `${clientUser.client_id}/${id}/${Date.now()}-${attachment.name}`;
-    const { error } = await admin.storage.from("submissions").upload(filePath, attachment, {
+    const { error } = await supabase.storage.from("submissions").upload(filePath, attachment, {
       contentType: attachment.type,
       upsert: false,
     });
-    if (!error) filePaths.push(filePath);
+    if (error) {
+      validationErrors.push(`Upload fehlgeschlagen: ${attachment.name}`);
+    } else {
+      filePaths.push(filePath);
+    }
+  }
+
+  if (validationErrors.length > 0) {
+    return NextResponse.redirect(
+      new URL(`/portal/inputs/${id}?error=${encodeURIComponent(validationErrors.join(" "))}`, request.url),
+    );
   }
 
   await portal.from("input_submissions").insert({
@@ -75,7 +102,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     file_paths: filePaths,
   });
 
-  await portal.from("input_requests").update({ status: "submitted" }).eq("id", id);
+  await admin.schema("portal").from("input_requests").update({ status: "submitted" }).eq("id", id);
 
-  return NextResponse.redirect(new URL(`/portal/inputs/${id}?success=Vielen+Dank%2C+die+Antwort+wurde+gespeichert`, request.url));
+  return NextResponse.redirect(new URL(`/portal/inputs/${id}?success=Vielen+Dank%2C+die+Antwort+wurde+gespeichert.`, request.url));
 }

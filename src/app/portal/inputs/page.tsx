@@ -5,7 +5,7 @@ const STATUS_LABEL: Record<string, string> = {
   open: "Offen",
   submitted: "Eingereicht",
   accepted: "Akzeptiert",
-  reopened: "Erneut geoeffnet",
+  reopened: "Erneut geöffnet",
 };
 
 export default async function PortalInputsPage() {
@@ -30,7 +30,7 @@ export default async function PortalInputsPage() {
               </Link>
               <p className="text-sm text-muted mt-1">
                 Status: {STATUS_LABEL[request.status] ?? request.status}
-                {request.due_date ? ` · Faellig: ${request.due_date}` : ""}
+                {request.due_date ? ` · Fällig: ${request.due_date}` : ""}
               </p>
             </li>
           ))}

@@ -41,7 +41,7 @@ export default function NewClientPage({
         {searchParams?.success ? <p className="text-sm text-green-700">{searchParams.success}</p> : null}
         {searchParams?.tempPassword ? (
           <p className="text-sm bg-linen-soft border border-border rounded p-2">
-            Temporaeres Passwort fuer den Erstlogin: <code>{searchParams.tempPassword}</code>
+            Temporäres Passwort für den Erstlogin: <code>{searchParams.tempPassword}</code>
           </p>
         ) : null}
         <button type="submit" className="bg-brand-orange text-white rounded-lg px-4 py-2 font-semibold">

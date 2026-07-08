@@ -22,12 +22,12 @@ export default async function PortalReportsPage() {
               <Link href={`/portal/reports/${report.id}`} className="font-semibold text-lg hover:underline">
                 {report.title}
               </Link>
-              <p className="text-sm text-muted mt-1">Veroeffentlicht: {formatDate(report.published_at ?? report.created_at)}</p>
+              <p className="text-sm text-muted mt-1">Veröffentlicht: {formatDate(report.published_at ?? report.created_at)}</p>
             </li>
           ))}
         </ul>
       ) : (
-        <div className="bg-surface border border-border rounded-lg p-6 text-muted">Noch keine Reports verfuegbar.</div>
+        <div className="bg-surface border border-border rounded-lg p-6 text-muted">Noch keine Reports verfügbar.</div>
       )}
     </section>
   );

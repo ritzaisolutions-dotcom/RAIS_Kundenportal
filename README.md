@@ -1,17 +1,17 @@
 # RAIS Client Portal
 
-Kundenportal fuer Status-Reports und strukturierte Input-Erfassung.
+Kundenportal für Status-Reports und strukturierte Input-Erfassung.
 
 ## Tech Stack
 
 - Next.js App Router (TypeScript)
 - Supabase (Auth, Postgres, Storage, RLS)
 - Vercel (`fra1`)
-- n8n + Resend fuer Portal-Benachrichtigungen
+- n8n mit nativen E-Mail-Nodes für Portal-Benachrichtigungen
 
 ## Lokale Entwicklung
 
-1. Abhaengigkeiten installieren:
+1. Abhängigkeiten installieren:
 
 ```bash
 npm install
@@ -39,6 +39,7 @@ npm run dev
 
 ## Operations
 
-- Deployment, n8n und Resend Setup: `docs/operations.md`
+- Deployment und n8n E-Mail-Setup: `docs/operations.md`
+- E-Mail-Vorlagen: `docs/email-templates.md`
 - Workflows: `n8n/workflows/*.workflow.json`
 - Branding: `brand.md`
