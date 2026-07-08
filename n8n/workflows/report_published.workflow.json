@@ -1,0 +1,59 @@
+{
+  "name": "RAIS Portal - report_published",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "webhook",
+      "name": "Supabase Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "rais-report-published"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.headers['x-portal-secret']}}",
+              "operation": "equal",
+              "value2": "={{$env.N8N_WEBHOOK_SECRET}}"
+            }
+          ]
+        }
+      },
+      "id": "secretCheck",
+      "name": "Secret Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer {{$env.RESEND_API_KEY}}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "jsonBody": "={\"from\":\"portal@mail.ritz-ai.solutions\",\"to\":[\"{{$json.body.record.primary_contact_email}}\"],\"subject\":\"Neuer Status-Report im RAIS Portal\",\"html\":\"<p>Es wurde ein neuer Status-Report veroeffentlicht.</p><p><a href='https://portal.ritz-ai.solutions/portal/reports/{{$json.body.record.id}}'>Zum Report</a></p>\"}"
+      },
+      "id": "sendResend",
+      "name": "Send Resend Mail",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [730, 250]
+    }
+  ],
+  "connections": {
+    "Supabase Webhook": {
+      "main": [[{ "node": "Secret Check", "type": "main", "index": 0 }]]
+    },
+    "Secret Check": {
+      "main": [[{ "node": "Send Resend Mail", "type": "main", "index": 0 }], []]
+    }
+  }
+}
