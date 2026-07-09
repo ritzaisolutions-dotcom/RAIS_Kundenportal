@@ -215,11 +215,15 @@ button {
   }
 
   .btn-primary {
+    /* Weiss auf RAIS-Orange liegt bei ~3.2:1 Kontrast (WCAG AA verlangt 4.5:1
+       fuer normalen Text) - deshalb Charcoal statt Weiss als Textfarbe.
+       Farbschema selbst bleibt unveraendert, nur die Textfarbe wechselt. */
     background: var(--primary-main);
-    color: #fff;
+    color: var(--color-charcoal);
   }
   .btn-primary:hover {
     background: var(--primary-dark);
+    color: #fff;
   }
 
   .btn-secondary {
