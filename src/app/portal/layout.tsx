@@ -4,22 +4,19 @@ import { AppShell } from "@/components/app-shell";
 import { requirePortalUser } from "@/lib/portal-queries";
 
 export default async function PortalLayout({ children }: { children: ReactNode }) {
-  const { supabase, clientId, isAdmin } = await requirePortalUser();
+  const { supabase, clientId, isAdmin, canViewReports, canViewInputs } = await requirePortalUser();
   if (isAdmin) redirect("/admin");
   if (!clientId) redirect("/login");
 
   const { data: client } = await supabase.schema("portal").from("clients").select("name,logo_path").eq("id", clientId).single();
 
+  const links = [
+    ...(canViewReports ? [{ href: "/portal/reports", label: "Reports" }] : []),
+    ...(canViewInputs ? [{ href: "/portal/inputs", label: "Aufgaben" }] : []),
+  ];
+
   return (
-    <AppShell
-      title={client?.name ?? "Kundenportal"}
-      subtitle="Ihre Reports und offenen Aufgaben"
-      links={[
-        { href: "/portal/reports", label: "Reports" },
-        { href: "/portal/inputs", label: "Aufgaben" },
-      ]}
-      logoUrl={client?.logo_path ?? null}
-    >
+    <AppShell title={client?.name ?? "Kundenportal"} subtitle="Ihre Reports und offenen Aufgaben" links={links} logoUrl={client?.logo_path ?? null}>
       {children}
     </AppShell>
   );

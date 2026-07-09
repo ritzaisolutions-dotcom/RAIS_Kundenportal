@@ -31,7 +31,7 @@ export default async function AdminClientDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; success?: string }>;
 }) {
   const { id } = await params;
   const resolvedSearch = await searchParams;
@@ -42,7 +42,11 @@ export default async function AdminClientDetailPage({
     portal.from("clients").select("*").eq("id", id).maybeSingle(),
     portal.from("status_reports").select("id,title,status,published_at,created_at").eq("client_id", id).order("created_at", { ascending: false }),
     portal.from("input_requests").select("id,title,status,due_date,created_at").eq("client_id", id).order("created_at", { ascending: false }),
-    portal.from("client_users").select("display_name,user_id,created_at").eq("client_id", id).order("created_at", { ascending: false }),
+    portal
+      .from("client_users")
+      .select("display_name,user_id,created_at,can_view_reports,can_view_inputs")
+      .eq("client_id", id)
+      .order("created_at", { ascending: false }),
   ]);
 
   if (!client) notFound();
@@ -59,11 +63,16 @@ export default async function AdminClientDetailPage({
           <Link className="btn btn-secondary" href={`/admin/clients/${id}/inputs/new`}>
             + Neue Input-Anfrage
           </Link>
+          <Link className="btn btn-secondary" href={`/admin/clients/${id}/users/new`}>
+            + Benutzer hinzufügen
+          </Link>
           <Link className="btn btn-ghost" href={`/admin/clients/${id}/edit`}>
             Kunde bearbeiten
           </Link>
         </div>
       </div>
+
+      {resolvedSearch.success ? <p className="chip chip-success">{resolvedSearch.success}</p> : null}
 
       <div className="card">
         <nav className="flex flex-wrap gap-2 p-4 border-b border-grey-200">
@@ -120,14 +129,38 @@ export default async function AdminClientDetailPage({
         {activeTab === "users" ? (
           <div>
             {users?.map((clientUser) => (
-              <div key={clientUser.user_id} className="table-row flex items-center gap-3 px-6 py-3 last:border-b-0">
+              <div key={clientUser.user_id} className="table-row flex flex-wrap items-center gap-4 px-6 py-4 last:border-b-0">
                 <div className="h-8 w-8 rounded-lg bg-secondary-light text-secondary-dark flex items-center justify-center text-xs font-semibold shrink-0">
                   {clientUser.display_name.charAt(0).toUpperCase()}
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-[160px]">
                   <p className="font-medium text-grey-900 truncate">{clientUser.display_name}</p>
                   <p className="text-xs text-grey-500">Seit {formatDate(clientUser.created_at)}</p>
                 </div>
+
+                <form
+                  action={`/admin/clients/${id}/users/${clientUser.user_id}/update`}
+                  method="post"
+                  className="flex flex-wrap items-center gap-3 flex-1"
+                >
+                  <label className="flex items-center gap-1.5 text-xs text-grey-600">
+                    <input type="checkbox" name="can_view_reports" defaultChecked={clientUser.can_view_reports} className="w-auto" />
+                    Reports
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs text-grey-600">
+                    <input type="checkbox" name="can_view_inputs" defaultChecked={clientUser.can_view_inputs} className="w-auto" />
+                    Input-Anfragen
+                  </label>
+                  <button type="submit" className="btn btn-secondary !text-xs !py-1.5 !px-3">
+                    Speichern
+                  </button>
+                </form>
+
+                <form action={`/admin/clients/${id}/users/${clientUser.user_id}/remove`} method="post" className="shrink-0">
+                  <button type="submit" className="btn btn-ghost !text-xs !py-1.5 !px-3">
+                    Entfernen
+                  </button>
+                </form>
               </div>
             ))}
             {!users?.length ? <div className="card-content text-grey-500">Noch keine Benutzer.</div> : null}

@@ -11,11 +11,31 @@ export async function requirePortalUser() {
   if (!user) redirect("/login");
 
   const { data: adminRow } = await portal.from("admins").select("user_id").eq("user_id", user.id).maybeSingle();
-  if (adminRow) return { supabase, user, clientId: null as string | null, isAdmin: true };
+  if (adminRow) {
+    return {
+      supabase,
+      user,
+      clientId: null as string | null,
+      isAdmin: true,
+      canViewReports: true,
+      canViewInputs: true,
+    };
+  }
 
-  const { data: clientUser } = await portal.from("client_users").select("client_id").eq("user_id", user.id).maybeSingle();
+  const { data: clientUser } = await portal
+    .from("client_users")
+    .select("client_id,can_view_reports,can_view_inputs")
+    .eq("user_id", user.id)
+    .maybeSingle();
   if (!clientUser) redirect("/login");
-  return { supabase, user, clientId: clientUser.client_id as string, isAdmin: false };
+  return {
+    supabase,
+    user,
+    clientId: clientUser.client_id as string,
+    isAdmin: false,
+    canViewReports: Boolean(clientUser.can_view_reports),
+    canViewInputs: Boolean(clientUser.can_view_inputs),
+  };
 }
 
 export async function requireAdminUser() {
