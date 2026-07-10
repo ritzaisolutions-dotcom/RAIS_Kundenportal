@@ -106,9 +106,14 @@ export default async function AdminClientDetailPage({
           <div>
             {requests?.map((request) => (
               <div key={request.id} className="table-row flex items-center justify-between gap-3 px-6 py-3 last:border-b-0">
-                <Link href={`/admin/clients/${id}/inputs/${request.id}/edit`} className="min-w-0 flex-1 hover:underline">
-                  <p className="font-medium text-grey-900 truncate">{request.title}</p>
-                  <p className="text-xs text-grey-500">{request.due_date ? `Fällig: ${request.due_date}` : "Kein Fälligkeitsdatum"}</p>
+                <Link
+                  href={`/admin/clients/${id}/inputs/${request.id}/edit`}
+                  className="min-w-0 flex-1 flex items-baseline gap-2 hover:underline"
+                >
+                  <p className="font-medium text-grey-900 truncate shrink-0">{request.title}</p>
+                  <p className="text-xs text-grey-500 truncate">
+                    {request.due_date ? `Fällig: ${request.due_date}` : "Kein Fälligkeitsdatum"}
+                  </p>
                 </Link>
                 <span className={`chip ${INPUT_STATUS_CHIP[request.status] ?? "chip-neutral"} shrink-0`}>
                   {INPUT_STATUS_LABEL[request.status] ?? request.status}

@@ -78,22 +78,24 @@ export default async function AdminHomePage() {
                 <div className="h-9 w-9 rounded-lg bg-primary-light text-primary-dark flex items-center justify-center font-semibold shrink-0">
                   {client.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-grey-900 truncate">{client.name}</p>
+                <div className="min-w-0 flex-1 flex items-baseline gap-2">
+                  <p className="font-medium text-grey-900 truncate shrink-0">{client.name}</p>
                   <p className="text-xs text-grey-500 truncate">
-                    Slug: {client.slug}
+                    {client.slug}
                     {client.primary_contact_email ? ` · ${client.primary_contact_email}` : ""}
                   </p>
                 </div>
 
-                <div className="hidden sm:flex flex-col items-end gap-1 w-40 shrink-0">
-                  <div className="w-full h-1.5 rounded-full bg-grey-200 overflow-hidden">
+                <div className="hidden md:flex items-center gap-2 w-48 shrink-0">
+                  <div className="flex-1 h-1.5 rounded-full bg-grey-200 overflow-hidden">
                     <div
                       className="h-full rounded-full bg-success"
                       style={{ width: `${pct ?? 0}%` }}
                     />
                   </div>
-                  <p className="text-xs text-grey-500">{pct !== null ? `${pct}% erledigt` : "Keine Anfragen"}</p>
+                  <p className="text-xs text-grey-500 shrink-0 whitespace-nowrap">
+                    {pct !== null ? `${pct}%` : "keine Anfragen"}
+                  </p>
                 </div>
 
                 {stats.waiting > 0 ? (
