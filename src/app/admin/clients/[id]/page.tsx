@@ -88,12 +88,12 @@ export default async function AdminClientDetailPage({
         </nav>
 
         {activeTab === "reports" ? (
-          <div>
+          <div className="admin-list-scroll">
             {reports?.map((report) => (
-              <div key={report.id} className="table-row flex items-center justify-between gap-3 px-6 py-3 last:border-b-0">
-                <div className="min-w-0">
+              <div key={report.id} className="table-row admin-list-row admin-list-row-report">
+                <div className="admin-list-inline-meta">
                   <p className="font-medium text-grey-900 truncate">{report.title}</p>
-                  <p className="text-xs text-grey-500">{formatDate(report.published_at ?? report.created_at)}</p>
+                  <p className="text-xs text-grey-500 truncate">{formatDate(report.published_at ?? report.created_at)}</p>
                 </div>
                 <span className={`chip ${REPORT_STATUS_CHIP[report.status] ?? "chip-neutral"} shrink-0`}>{report.status}</span>
               </div>
@@ -103,14 +103,14 @@ export default async function AdminClientDetailPage({
         ) : null}
 
         {activeTab === "inputs" ? (
-          <div>
+          <div className="admin-list-scroll">
             {requests?.map((request) => (
-              <div key={request.id} className="table-row flex items-center justify-between gap-3 px-6 py-3 last:border-b-0">
+              <div key={request.id} className="table-row admin-list-row admin-list-row-input">
                 <Link
                   href={`/admin/clients/${id}/inputs/${request.id}/edit`}
-                  className="min-w-0 flex-1 flex items-baseline gap-2 hover:underline"
+                  className="admin-list-inline-meta hover:underline min-w-0"
                 >
-                  <p className="font-medium text-grey-900 truncate shrink-0">{request.title}</p>
+                  <p className="font-medium text-grey-900 truncate">{request.title}</p>
                   <p className="text-xs text-grey-500 truncate">
                     {request.due_date ? `Fällig: ${request.due_date}` : "Kein Fälligkeitsdatum"}
                   </p>
@@ -124,7 +124,9 @@ export default async function AdminClientDetailPage({
                       Veröffentlichen
                     </button>
                   </form>
-                ) : null}
+                ) : (
+                  <span aria-hidden="true" className="shrink-0" />
+                )}
               </div>
             ))}
             {!requests?.length ? <div className="card-content text-grey-500">Noch keine Input-Anfragen.</div> : null}
@@ -132,21 +134,21 @@ export default async function AdminClientDetailPage({
         ) : null}
 
         {activeTab === "users" ? (
-          <div>
+          <div className="admin-list-scroll">
             {users?.map((clientUser) => (
-              <div key={clientUser.user_id} className="table-row flex flex-wrap items-center gap-4 px-6 py-4 last:border-b-0">
+              <div key={clientUser.user_id} className="table-row admin-list-row admin-list-row-user-compact">
                 <div className="h-8 w-8 rounded-lg bg-secondary-light text-secondary-dark flex items-center justify-center text-xs font-semibold shrink-0">
                   {clientUser.display_name.charAt(0).toUpperCase()}
                 </div>
-                <div className="min-w-[160px]">
+                <div className="admin-list-inline-meta">
                   <p className="font-medium text-grey-900 truncate">{clientUser.display_name}</p>
-                  <p className="text-xs text-grey-500">Seit {formatDate(clientUser.created_at)}</p>
+                  <p className="text-xs text-grey-500 truncate">Seit {formatDate(clientUser.created_at)}</p>
                 </div>
 
                 <form
                   action={`/admin/clients/${id}/users/${clientUser.user_id}/update`}
                   method="post"
-                  className="flex flex-wrap items-center gap-3 flex-1"
+                  className="flex items-center gap-3 shrink-0 whitespace-nowrap"
                 >
                   <label className="flex items-center gap-1.5 text-xs text-grey-600">
                     <input type="checkbox" name="can_view_reports" defaultChecked={clientUser.can_view_reports} className="w-auto" />

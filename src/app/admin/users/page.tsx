@@ -61,26 +61,29 @@ export default async function AdminUsersPage({
 
       <div className="card">
         {rows.length ? (
-          <div>
+          <div className="admin-list-scroll">
             {rows.map((row) => (
-              <div key={row.user_id} className="table-row flex flex-wrap items-center gap-4 px-6 py-4 last:border-b-0">
+              <div key={row.user_id} className="table-row admin-list-row admin-list-row-user">
                 <div className="h-8 w-8 rounded-lg bg-secondary-light text-secondary-dark flex items-center justify-center text-xs font-semibold shrink-0">
                   {row.display_name.charAt(0).toUpperCase()}
                 </div>
 
-                <div className="min-w-[220px] flex-1 flex items-baseline gap-2">
-                  <p className="font-medium text-grey-900 truncate shrink-0">{row.display_name}</p>
+                <div className="admin-list-inline-meta">
+                  <p className="font-medium text-grey-900 truncate">{row.display_name}</p>
                   <p className="text-xs text-grey-500 truncate">
                     {row.email} · {row.clients?.name ?? "Unbekannter Kunde"}
                   </p>
                 </div>
 
-                <p className="text-xs text-grey-500 shrink-0 hidden lg:block">Seit {formatDate(row.created_at)}</p>
+                <div className="text-xs text-grey-500 shrink-0 whitespace-nowrap">
+                  <span className="hidden lg:inline">Seit {formatDate(row.created_at)}</span>
+                  <span className="lg:hidden">–</span>
+                </div>
 
                 <form
                   action={`/admin/clients/${row.client_id}/users/${row.user_id}/update`}
                   method="post"
-                  className="flex flex-wrap items-center gap-3 shrink-0"
+                  className="flex items-center gap-3 shrink-0 whitespace-nowrap"
                 >
                   <input type="hidden" name="redirect_to" value="/admin/users" />
                   <label className="flex items-center gap-1.5 text-xs text-grey-600">

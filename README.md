@@ -35,6 +35,7 @@ npm run dev
 
 - Migration: `supabase/migrations/20260708222000_portal_schema_rls.sql`
 - Haller Seed: `docs/seed-haller.sql`
+- Testkunden (Berechtigungen): `npm run seed:test-customers` — legt drei Testkunden mit unterschiedlichen `can_view_reports` / `can_view_inputs`-Profilen an
 
 ## Operations
 
