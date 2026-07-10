@@ -155,7 +155,7 @@ h4 {
   }
 }
 
-input,
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 textarea,
 select {
   background: var(--grey-50);
@@ -295,6 +295,37 @@ button {
     color: var(--grey-600);
   }
 
+  .portal-success-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--success-dark);
+    background: var(--success-light);
+    color: var(--success-dark);
+  }
+
+  .portal-success-banner-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background: var(--success-dark);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .portal-success-banner-text {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+
   .sidebar-link {
     display: flex;
     align-items: center;
@@ -328,12 +359,12 @@ button {
   }
 
   .admin-list-row {
-    display: grid;
+    display: grid !important;
+    width: 100%;
     align-items: center;
     column-gap: 1rem;
     row-gap: 0;
     padding: 0.75rem 1.5rem;
-    min-width: min(100%, 48rem);
   }
 
   .admin-list-row:last-child {
@@ -342,22 +373,27 @@ button {
 
   .admin-list-row-customer {
     grid-template-columns: auto minmax(0, 1fr) 12rem auto;
+    min-width: 44rem;
   }
 
   .admin-list-row-input {
     grid-template-columns: minmax(0, 1fr) auto auto;
+    min-width: 36rem;
   }
 
   .admin-list-row-report {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    min-width: 32rem;
   }
 
   .admin-list-row-user {
-    grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+    grid-template-columns: auto minmax(0, 1fr) 7rem auto auto;
+    min-width: 56rem;
   }
 
   .admin-list-row-user-compact {
     grid-template-columns: auto minmax(0, 1fr) auto auto;
+    min-width: 44rem;
   }
 
   .admin-list-inline-meta {
@@ -365,7 +401,12 @@ button {
     align-items: baseline;
     gap: 0.5rem;
     min-width: 0;
+    overflow: hidden;
     white-space: nowrap;
+  }
+
+  .admin-list-inline-meta > * {
+    margin: 0;
   }
 
   .content-panel {

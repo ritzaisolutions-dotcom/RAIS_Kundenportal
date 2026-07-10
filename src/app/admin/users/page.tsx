@@ -69,10 +69,10 @@ export default async function AdminUsersPage({
                 </div>
 
                 <div className="admin-list-inline-meta">
-                  <p className="font-medium text-grey-900 truncate">{row.display_name}</p>
-                  <p className="text-xs text-grey-500 truncate">
+                  <span className="font-medium text-grey-900 truncate">{row.display_name}</span>
+                  <span className="text-xs text-grey-500 truncate">
                     {row.email} · {row.clients?.name ?? "Unbekannter Kunde"}
-                  </p>
+                  </span>
                 </div>
 
                 <div className="text-xs text-grey-500 shrink-0 whitespace-nowrap">
@@ -83,23 +83,23 @@ export default async function AdminUsersPage({
                 <form
                   action={`/admin/clients/${row.client_id}/users/${row.user_id}/update`}
                   method="post"
-                  className="flex items-center gap-3 shrink-0 whitespace-nowrap"
+                  className="flex items-center gap-2 shrink-0 whitespace-nowrap"
                 >
                   <input type="hidden" name="redirect_to" value="/admin/users" />
-                  <label className="flex items-center gap-1.5 text-xs text-grey-600">
-                    <input type="checkbox" name="can_view_reports" defaultChecked={row.can_view_reports} className="w-auto" />
+                  <label className="flex items-center gap-1.5 text-xs text-grey-600 shrink-0">
+                    <input type="checkbox" name="can_view_reports" defaultChecked={row.can_view_reports} className="!w-4 shrink-0" />
                     Reports
                   </label>
-                  <label className="flex items-center gap-1.5 text-xs text-grey-600">
-                    <input type="checkbox" name="can_view_inputs" defaultChecked={row.can_view_inputs} className="w-auto" />
+                  <label className="flex items-center gap-1.5 text-xs text-grey-600 shrink-0">
+                    <input type="checkbox" name="can_view_inputs" defaultChecked={row.can_view_inputs} className="!w-4 shrink-0" />
                     Input-Anfragen
                   </label>
-                  <button type="submit" className="btn btn-secondary !text-xs !py-1.5 !px-3">
+                  <button type="submit" className="btn btn-secondary !text-xs !py-1.5 !px-3 shrink-0">
                     Speichern
                   </button>
                 </form>
 
-                <form action={`/admin/clients/${row.client_id}/users/${row.user_id}/remove`} method="post" className="shrink-0">
+                <form action={`/admin/clients/${row.client_id}/users/${row.user_id}/remove`} method="post" className="shrink-0 whitespace-nowrap">
                   <input type="hidden" name="redirect_to" value="/admin/users" />
                   <button type="submit" className="btn btn-ghost !text-xs !py-1.5 !px-3">
                     Entfernen

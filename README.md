@@ -35,11 +35,13 @@ npm run dev
 
 - Migration: `supabase/migrations/20260708222000_portal_schema_rls.sql`
 - Haller Seed: `docs/seed-haller.sql`
+- Onboarding Starter: `docs/seed-onboarding-starter.sql`
 - Testkunden (Berechtigungen): `npm run seed:test-customers` — legt drei Testkunden mit unterschiedlichen `can_view_reports` / `can_view_inputs`-Profilen an
 
 ## Operations
 
+- **Onboarding Journey (Playbook, Flow, Audit):** [`docs/onboarding-journey.md`](docs/onboarding-journey.md)
 - Deployment und n8n E-Mail-Setup: `docs/operations.md`
 - E-Mail-Vorlagen: `docs/email-templates.md`
-- Workflows: `n8n/workflows/*.workflow.json`
+- Workflows: `n8n/workflows/*.workflow.json` (Skribble-Workflow: Vorlage, erst nach Production-API-Key aktivieren)
 - Branding: `brand.md`

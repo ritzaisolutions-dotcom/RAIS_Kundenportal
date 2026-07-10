@@ -1,0 +1,118 @@
+﻿{
+  "name": "RAIS Portal - skribble_signed",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rais-skribble-signed/:requestId/:documentId",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Skribble Callback",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "rais-skribble-signed"
+    },
+    {
+      "parameters": {
+        "url": "={{$env.SKRIBBLE_API_BASE || 'https://api.skribble.de/v2'}}/signature-requests/{{$json.params.requestId}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "verifyStatus",
+      "name": "Verify SIGNED",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SKRIBBLE_HTTP_HEADER",
+          "name": "Skribble API Bearer"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.status}}",
+              "operation": "equal",
+              "value2": "SIGNED"
+            }
+          ]
+        }
+      },
+      "id": "signedCheck",
+      "name": "Status SIGNED",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "portal@mail.ritz-ai.solutions",
+        "toEmail": "kevin@ritz-ai.solutions",
+        "subject": "={{\"Skribble: AVV/SA unterzeichnet – Request \" + $('Skribble Callback').item.json.params.requestId}}",
+        "emailType": "html",
+        "message": "={{\"<p>Ein Skribble-Dokument wurde unterzeichnet.</p><ul><li>Request-ID: \" + $('Skribble Callback').item.json.params.requestId + \"</li><li>Document-ID: \" + $('Skribble Callback').item.json.params.documentId + \"</li><li>Status: \" + $json.status + \"</li></ul><p><strong>Nächster Schritt:</strong> Stripe-Willkommensmail an den Kunden senden.</p>\"}}"
+      },
+      "id": "alertKevin",
+      "name": "Alert Kevin",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [940, 240]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"ok\":true}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "successResponse",
+      "name": "Success 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1180, 240]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"error\":\"not_signed\"}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "id": "notSignedResponse",
+      "name": "Not Signed 422",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [940, 420]
+    }
+  ],
+  "connections": {
+    "Skribble Callback": {
+      "main": [[{ "node": "Verify SIGNED", "type": "main", "index": 0 }]]
+    },
+    "Verify SIGNED": {
+      "main": [[{ "node": "Status SIGNED", "type": "main", "index": 0 }]]
+    },
+    "Status SIGNED": {
+      "main": [
+        [{ "node": "Alert Kevin", "type": "main", "index": 0 }],
+        [{ "node": "Not Signed 422", "type": "main", "index": 0 }]
+      ]
+    },
+    "Alert Kevin": {
+      "main": [[{ "node": "Success 200", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

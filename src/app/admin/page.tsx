@@ -79,11 +79,11 @@ export default async function AdminHomePage() {
                   {client.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="admin-list-inline-meta">
-                  <p className="font-medium text-grey-900 truncate">{client.name}</p>
-                  <p className="text-xs text-grey-500 truncate">
+                  <span className="font-medium text-grey-900 truncate">{client.name}</span>
+                  <span className="text-xs text-grey-500 truncate">
                     {client.slug}
                     {client.primary_contact_email ? ` · ${client.primary_contact_email}` : ""}
-                  </p>
+                  </span>
                 </div>
 
                 <div className="shrink-0">

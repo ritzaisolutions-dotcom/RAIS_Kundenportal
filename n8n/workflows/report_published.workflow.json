@@ -7,7 +7,10 @@
       "name": "Supabase Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [240, 300],
+      "position": [
+        240,
+        300
+      ],
       "webhookId": "rais-report-published"
     },
     {
@@ -26,7 +29,10 @@
       "name": "Secret Check",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [480, 300]
+      "position": [
+        480,
+        300
+      ]
     },
     {
       "parameters": {
@@ -36,11 +42,6 @@
               "value1": "={{$json.body.record.status}}",
               "operation": "equal",
               "value2": "published"
-            },
-            {
-              "value1": "={{$json.body.old_record.status}}",
-              "operation": "notEqual",
-              "value2": "published"
             }
           ]
         }
@@ -49,7 +50,10 @@
       "name": "Published Transition",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [700, 300]
+      "position": [
+        700,
+        300
+      ]
     },
     {
       "parameters": {
@@ -76,7 +80,10 @@
       "name": "Load Client Email",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [700, 250]
+      "position": [
+        700,
+        250
+      ]
     },
     {
       "parameters": {
@@ -84,13 +91,16 @@
         "toEmail": "={{$json.primary_contact_email}}",
         "subject": "Neuer Status-Report im RAIS Portal",
         "emailType": "html",
-        "message": "={{\"<p>Guten Tag,</p><p>es wurde ein neuer Status-Report für Ihr Projekt veröffentlicht.</p><p><a href='https://portal.ritz-ai.solutions/portal/reports/\" + $('Supabase Webhook').item.json.body.record.id + \"'>Zum Report</a></p><p>Viele Grüße<br/>RAIS</p>\"}}"
+        "message": "={{\"<p>Guten Tag,</p><p>es wurde ein neuer Status-Report f\u00fcr Ihr Projekt ver\u00f6ffentlicht.</p><p><a href='https://portal.ritz-ai.solutions/portal/reports/\" + $('Supabase Webhook').item.json.body.record.id + \"'>Zum Report</a></p><p>Viele Gr\u00fc\u00dfe<br/>RAIS</p>\"}}"
       },
       "id": "sendEmail",
       "name": "Send Email",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2,
-      "position": [940, 250]
+      "position": [
+        940,
+        250
+      ]
     },
     {
       "parameters": {
@@ -107,7 +117,10 @@
       "name": "Recipient Present",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [900, 420]
+      "position": [
+        900,
+        420
+      ]
     },
     {
       "parameters": {
@@ -121,7 +134,10 @@
       "name": "Unauthorized 401",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [700, 420]
+      "position": [
+        700,
+        420
+      ]
     },
     {
       "parameters": {
@@ -135,7 +151,10 @@
       "name": "Missing Recipient 422",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1120, 560]
+      "position": [
+        1120,
+        560
+      ]
     },
     {
       "parameters": {
@@ -149,36 +168,99 @@
       "name": "Success 200",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1140, 250]
+      "position": [
+        1140,
+        250
+      ]
     }
   ],
   "connections": {
     "Supabase Webhook": {
-      "main": [[{ "node": "Secret Check", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Secret Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Secret Check": {
       "main": [
-        [{ "node": "Published Transition", "type": "main", "index": 0 }],
-        [{ "node": "Unauthorized 401", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Published Transition",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unauthorized 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Published Transition": {
       "main": [
-        [{ "node": "Load Client Email", "type": "main", "index": 0 }],
-        [{ "node": "Success 200", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Load Client Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Success 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Load Client Email": {
-      "main": [[{ "node": "Recipient Present", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Recipient Present",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Recipient Present": {
       "main": [
-        [{ "node": "Send Email", "type": "main", "index": 0 }],
-        [{ "node": "Missing Recipient 422", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Missing Recipient 422",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Send Email": {
-      "main": [[{ "node": "Success 200", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Success 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   }
 }

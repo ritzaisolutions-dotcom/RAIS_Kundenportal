@@ -174,7 +174,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     });
   }
 
-  return NextResponse.redirect(new URL(`/portal/inputs/${id}?success=Vielen+Dank%2C+die+Antwort+wurde+gespeichert.`, request.url), {
+  return NextResponse.redirect(new URL(`/portal/inputs/${id}?success=Daten+übermittelt.+Vielen+Dank!`, request.url), {
     status: 303,
   });
 }

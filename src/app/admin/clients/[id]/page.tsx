@@ -31,7 +31,7 @@ export default async function AdminClientDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string; success?: string }>;
+  searchParams: Promise<{ tab?: string; success?: string; error?: string }>;
 }) {
   const { id } = await params;
   const resolvedSearch = await searchParams;
@@ -73,6 +73,7 @@ export default async function AdminClientDetailPage({
       </div>
 
       {resolvedSearch.success ? <p className="chip chip-success">{resolvedSearch.success}</p> : null}
+      {resolvedSearch.error ? <p className="chip chip-error">{resolvedSearch.error}</p> : null}
 
       <div className="card">
         <nav className="flex flex-wrap gap-2 p-4 border-b border-grey-200">
@@ -92,10 +93,19 @@ export default async function AdminClientDetailPage({
             {reports?.map((report) => (
               <div key={report.id} className="table-row admin-list-row admin-list-row-report">
                 <div className="admin-list-inline-meta">
-                  <p className="font-medium text-grey-900 truncate">{report.title}</p>
-                  <p className="text-xs text-grey-500 truncate">{formatDate(report.published_at ?? report.created_at)}</p>
+                  <span className="font-medium text-grey-900 truncate">{report.title}</span>
+                  <span className="text-xs text-grey-500 truncate">{formatDate(report.published_at ?? report.created_at)}</span>
                 </div>
                 <span className={`chip ${REPORT_STATUS_CHIP[report.status] ?? "chip-neutral"} shrink-0`}>{report.status}</span>
+                {report.status === "draft" ? (
+                  <form action={`/admin/clients/${id}/reports/${report.id}/publish`} method="post" className="shrink-0">
+                    <button type="submit" className="btn btn-secondary !text-xs !py-1.5 !px-3">
+                      Veröffentlichen
+                    </button>
+                  </form>
+                ) : (
+                  <span aria-hidden="true" className="shrink-0" />
+                )}
               </div>
             ))}
             {!reports?.length ? <div className="card-content text-grey-500">Noch keine Status-Reports.</div> : null}
@@ -110,10 +120,10 @@ export default async function AdminClientDetailPage({
                   href={`/admin/clients/${id}/inputs/${request.id}/edit`}
                   className="admin-list-inline-meta hover:underline min-w-0"
                 >
-                  <p className="font-medium text-grey-900 truncate">{request.title}</p>
-                  <p className="text-xs text-grey-500 truncate">
+                  <span className="font-medium text-grey-900 truncate">{request.title}</span>
+                  <span className="text-xs text-grey-500 truncate">
                     {request.due_date ? `Fällig: ${request.due_date}` : "Kein Fälligkeitsdatum"}
-                  </p>
+                  </span>
                 </Link>
                 <span className={`chip ${INPUT_STATUS_CHIP[request.status] ?? "chip-neutral"} shrink-0`}>
                   {INPUT_STATUS_LABEL[request.status] ?? request.status}
@@ -141,24 +151,24 @@ export default async function AdminClientDetailPage({
                   {clientUser.display_name.charAt(0).toUpperCase()}
                 </div>
                 <div className="admin-list-inline-meta">
-                  <p className="font-medium text-grey-900 truncate">{clientUser.display_name}</p>
-                  <p className="text-xs text-grey-500 truncate">Seit {formatDate(clientUser.created_at)}</p>
+                  <span className="font-medium text-grey-900 truncate">{clientUser.display_name}</span>
+                  <span className="text-xs text-grey-500 truncate">Seit {formatDate(clientUser.created_at)}</span>
                 </div>
 
                 <form
                   action={`/admin/clients/${id}/users/${clientUser.user_id}/update`}
                   method="post"
-                  className="flex items-center gap-3 shrink-0 whitespace-nowrap"
+                  className="flex items-center gap-2 shrink-0 whitespace-nowrap"
                 >
-                  <label className="flex items-center gap-1.5 text-xs text-grey-600">
-                    <input type="checkbox" name="can_view_reports" defaultChecked={clientUser.can_view_reports} className="w-auto" />
+                  <label className="flex items-center gap-1.5 text-xs text-grey-600 shrink-0">
+                    <input type="checkbox" name="can_view_reports" defaultChecked={clientUser.can_view_reports} className="!w-4 shrink-0" />
                     Reports
                   </label>
-                  <label className="flex items-center gap-1.5 text-xs text-grey-600">
-                    <input type="checkbox" name="can_view_inputs" defaultChecked={clientUser.can_view_inputs} className="w-auto" />
+                  <label className="flex items-center gap-1.5 text-xs text-grey-600 shrink-0">
+                    <input type="checkbox" name="can_view_inputs" defaultChecked={clientUser.can_view_inputs} className="!w-4 shrink-0" />
                     Input-Anfragen
                   </label>
-                  <button type="submit" className="btn btn-secondary !text-xs !py-1.5 !px-3">
+                  <button type="submit" className="btn btn-secondary !text-xs !py-1.5 !px-3 shrink-0">
                     Speichern
                   </button>
                 </form>

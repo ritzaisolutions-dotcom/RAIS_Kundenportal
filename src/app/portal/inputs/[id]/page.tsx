@@ -74,7 +74,14 @@ export default async function PortalInputDetailPage({
         </div>
 
         {resolvedSearch.error ? <p className="text-sm text-red-600">{resolvedSearch.error}</p> : null}
-        {resolvedSearch.success ? <p className="text-sm text-green-700">{resolvedSearch.success}</p> : null}
+        {resolvedSearch.success ? (
+          <div className="portal-success-banner" role="status">
+            <span className="portal-success-banner-icon" aria-hidden="true">
+              ✓
+            </span>
+            <p className="portal-success-banner-text">{resolvedSearch.success}</p>
+          </div>
+        ) : null}
 
         <button type="submit" className="bg-brand-orange text-white rounded-lg px-4 py-2 font-semibold">
           Antwort einreichen
