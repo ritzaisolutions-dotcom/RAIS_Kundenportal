@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { requirePortalUser, resolvePortalHome } from "@/lib/portal-queries";
 
-export default function PortalPage() {
-  redirect("/portal/reports");
+export default async function PortalPage() {
+  const { canViewReports, canViewInputs } = await requirePortalUser();
+  redirect(resolvePortalHome({ canViewReports, canViewInputs }));
 }

@@ -14,6 +14,8 @@
 - [ ] Haller Seed-Daten angelegt und mit Thomas abgestimmt
 - [ ] Impressum mit finalen Stammdaten ergänzt (Anschrift, Vertretungsberechtigte, Registerangaben) - Platzhalter sind weiterhin live
 - [x] n8n Smoke-Test 2026-07-09: alle drei Workflows aktiv, POST konfiguriert, Secret-Check + Response-Mode live geprüft und korrigiert
+- [x] Webhook-Trigger auf Vault+pg_net Migration umgestellt (2026-07-10: Vault-Secret angelegt, Migration `portal_webhooks_vault` live, keine Klartext-Secrets mehr in Trigger-Metadaten)
+- [x] `input_requested` benachrichtigt nur bei Transition nach `open` (2026-07-10: DB-Trigger-Guard live; n8n-Workflow-Guard in Repo, Import in n8n prüfen)
 
 ## Offen aus Ship-Audit v1.0 (2026-07-09)
 

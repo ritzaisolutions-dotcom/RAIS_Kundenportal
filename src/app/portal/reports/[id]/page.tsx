@@ -1,7 +1,8 @@
 import Markdown from "react-markdown";
+import { redirect } from "next/navigation";
 import remarkGfm from "remark-gfm";
 import { createClient } from "@/lib/supabase/server";
-import { getReportForClient, requirePortalUser } from "@/lib/portal-queries";
+import { getReportForClient, requirePortalUser, resolvePortalHome } from "@/lib/portal-queries";
 import { formatDate } from "@/lib/utils";
 
 async function resolveSignedImageUrls(markdown: string) {
@@ -36,7 +37,11 @@ async function resolveSignedImageUrls(markdown: string) {
 
 export default async function PortalReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { clientId } = await requirePortalUser();
+  const { clientId, canViewReports, canViewInputs } = await requirePortalUser();
+  if (!canViewReports) {
+    redirect(resolvePortalHome({ canViewReports, canViewInputs }));
+  }
+
   const report = await getReportForClient(id, clientId!);
   const renderedMarkdown = await resolveSignedImageUrls(report.body_md);
 

@@ -1,42 +1,26 @@
--- Supabase Database Webhooks (run in SQL editor after creating n8n webhook URLs)
--- Replace the placeholder URLs with the real n8n endpoints.
-
--- report_published
-create trigger report_published_webhook
-after update on portal.status_reports
-for each row
-when (old.status is distinct from new.status and new.status = 'published')
-execute function supabase_functions.http_request(
-  'https://n8n.ritz-ai.solutions/webhook/rais-report-published',
-  'POST',
-  '{"Content-Type":"application/json","x-portal-secret":"<N8N_WEBHOOK_SECRET>"}',
-  '{}',
-  '5000'
-);
-
--- input_requested
-create trigger input_requested_webhook
-after insert or update on portal.input_requests
-for each row
-when (new.status = 'open')
-execute function supabase_functions.http_request(
-  'https://n8n.ritz-ai.solutions/webhook/rais-input-requested',
-  'POST',
-  '{"Content-Type":"application/json","x-portal-secret":"<N8N_WEBHOOK_SECRET>"}',
-  '{}',
-  '5000'
-);
-
--- input_submitted
-create trigger input_submitted_webhook
-after insert on portal.input_submissions
-for each row
-execute function supabase_functions.http_request(
-  'https://n8n.ritz-ai.solutions/webhook/rais-input-submitted',
-  'POST',
-  '{"Content-Type":"application/json","x-portal-secret":"<N8N_WEBHOOK_SECRET>"}',
-  '{}',
-  '5000'
-);
+-- Deprecated.
+--
+-- Webhook triggers are now versioned in migration
+-- `supabase/migrations/20260710112000_portal_webhooks_vault.sql`.
+--
+-- Why this file is no longer executable:
+-- 1) Inline headers in `supabase_functions.http_request` expose secrets in
+--    trigger metadata.
+-- 2) The old `input_requested` trigger fired on any UPDATE where status stayed
+--    `open`, causing duplicate mails.
+--
+-- Current model:
+-- - Trigger functions in `portal` dispatch via `pg_net`.
+-- - Secret is read at runtime from Supabase Vault (`n8n_webhook_secret`).
+-- - Transition guards are enforced in SQL and n8n workflow logic.
+--
+-- Secret bootstrap (manual, do not commit real values):
+--   select vault.create_secret('<ROTATED_SECRET>', 'n8n_webhook_secret', 'RAIS portal webhook secret');
+--
+-- To inspect active triggers:
+--   select event_object_table, trigger_name, event_manipulation, action_statement
+--   from information_schema.triggers
+--   where trigger_schema = 'portal'
+--   order by event_object_table, trigger_name;
 
 

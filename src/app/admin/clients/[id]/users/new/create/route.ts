@@ -1,7 +1,12 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
+import { rollbackOnboardingArtifacts, rollbackSuffix } from "@/lib/onboarding";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+
+function errorUrl(request: Request, clientId: string, message: string, cleanupErrors: string[] = []) {
+  return new URL(`/admin/clients/${clientId}/users/new?error=${message}${rollbackSuffix(cleanupErrors)}`, request.url);
+}
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -31,7 +36,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   });
 
   if (authError || !createdUser.user) {
-    return NextResponse.redirect(new URL(`/admin/clients/${id}/users/new?error=Benutzer+konnte+nicht+angelegt+werden`, request.url), {
+    return NextResponse.redirect(errorUrl(request, id, "Benutzer+konnte+nicht+angelegt+werden"), {
       status: 303,
     });
   }
@@ -45,7 +50,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   });
 
   if (clientUserError) {
-    return NextResponse.redirect(new URL(`/admin/clients/${id}/users/new?error=Zuordnung+fehlgeschlagen`, request.url), { status: 303 });
+    const { errors } = await rollbackOnboardingArtifacts({ userId: createdUser.user.id });
+    return NextResponse.redirect(errorUrl(request, id, "Zuordnung+fehlgeschlagen", errors), { status: 303 });
   }
 
   const successUrl = new URL(`/admin/clients/${id}/users/new`, request.url);

@@ -74,7 +74,8 @@ async function main() {
   console.log(`Gefundene Kunden: ${clients.map((c) => c.name).join(", ")}\n`);
 
   // Fuer jeden Kunden: 1 temporaerer Testnutzer mit vollen Rechten + 1
-  // Test-Input-Anfrage (status "open", damit sie ueberhaupt sichtbar waere)
+  // Test-Input-Anfrage mit status "reopened": sichtbar für den Portal-User,
+  // aber kein "open"-Notification-Trigger.
   // + 1 Test-Status-Report (status "published"), damit es ueberhaupt etwas
   // zum potenziell leaken gibt, auch wenn der Kunde noch keine echten Daten hat.
   type TenantContext = {
@@ -124,7 +125,7 @@ async function main() {
         client_id: client.id,
         title: `RLS-Test-Anfrage (${client.name})`,
         kind: "freetext",
-        status: "open",
+        status: "reopened",
       })
       .select("id")
       .single();

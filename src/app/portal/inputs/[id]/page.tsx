@@ -1,4 +1,6 @@
-import { getInputRequestForClient, parseFormSchema, requirePortalUser } from "@/lib/portal-queries";
+import { redirect } from "next/navigation";
+import { getInputRequestForClient, parseFormSchema, requirePortalUser, resolvePortalHome } from "@/lib/portal-queries";
+import { ACCEPT_SUBMISSION_FILES } from "@/lib/upload-validation";
 
 export default async function PortalInputDetailPage({
   params,
@@ -9,7 +11,11 @@ export default async function PortalInputDetailPage({
 }) {
   const { id } = await params;
   const resolvedSearch = await searchParams;
-  const { clientId } = await requirePortalUser();
+  const { clientId, canViewReports, canViewInputs } = await requirePortalUser();
+  if (!canViewInputs) {
+    redirect(resolvePortalHome({ canViewReports, canViewInputs }));
+  }
+
   const request = await getInputRequestForClient(id, clientId!);
   const fields = parseFormSchema(request.form_schema);
 
@@ -52,7 +58,7 @@ export default async function PortalInputDetailPage({
                   ))}
                 </select>
               ) : field.type === "file" ? (
-                <input id={field.key} name={field.key} type="file" required={field.required} />
+                <input id={field.key} name={field.key} type="file" accept={ACCEPT_SUBMISSION_FILES} required={field.required} />
               ) : (
                 <input id={field.key} name={field.key} type={field.type} required={field.required} />
               )}
@@ -64,7 +70,7 @@ export default async function PortalInputDetailPage({
           <label htmlFor="attachments" className="block text-sm mb-1">
             Weitere Dateien (optional)
           </label>
-          <input id="attachments" name="attachments" type="file" multiple />
+          <input id="attachments" name="attachments" type="file" accept={ACCEPT_SUBMISSION_FILES} multiple />
         </div>
 
         {resolvedSearch.error ? <p className="text-sm text-red-600">{resolvedSearch.error}</p> : null}

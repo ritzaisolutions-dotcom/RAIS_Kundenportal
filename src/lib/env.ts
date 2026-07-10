@@ -7,7 +7,6 @@ const publicEnvSchema = z.object({
 
 const privateEnvSchema = publicEnvSchema.extend({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-  N8N_WEBHOOK_SECRET: z.string().min(1).optional(),
 });
 
 export function getPublicEnv() {
@@ -22,6 +21,5 @@ export function getPrivateEnv() {
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    N8N_WEBHOOK_SECRET: process.env.N8N_WEBHOOK_SECRET,
   });
 }

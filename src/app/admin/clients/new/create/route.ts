@@ -1,7 +1,13 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
+import { rollbackOnboardingArtifacts, rollbackSuffix } from "@/lib/onboarding";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { IMAGE_EXTENSIONS, IMAGE_MIME_TYPES, MAX_LOGO_BYTES, validateUploadedFile } from "@/lib/upload-validation";
+
+function errorUrl(request: Request, message: string, cleanupErrors: string[] = []) {
+  return new URL(`/admin/clients/new?error=${message}${rollbackSuffix(cleanupErrors)}`, request.url);
+}
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -24,6 +30,15 @@ export async function POST(request: Request) {
 
   let logoPath: string | null = null;
   if (logo instanceof File && logo.size > 0) {
+    const logoValidationError = validateUploadedFile(logo, {
+      maxBytes: MAX_LOGO_BYTES,
+      allowedMimeTypes: IMAGE_MIME_TYPES,
+      allowedExtensions: IMAGE_EXTENSIONS,
+    });
+    if (logoValidationError) {
+      return NextResponse.redirect(errorUrl(request, "Logo+ist+ungültig"), { status: 303 });
+    }
+
     const extension = logo.name.includes(".") ? logo.name.split(".").pop() : "png";
     logoPath = `${slug}-${Date.now()}.${extension}`;
     const { error: logoError } = await admin.storage.from("logos").upload(logoPath, logo, {
@@ -47,7 +62,11 @@ export async function POST(request: Request) {
     .single();
 
   if (clientError || !client) {
-    return NextResponse.redirect(new URL("/admin/clients/new?error=Kunde+konnte+nicht+angelegt+werden", request.url), { status: 303 });
+    if (logoPath) {
+      const { errors } = await rollbackOnboardingArtifacts({ logoPath });
+      return NextResponse.redirect(errorUrl(request, "Kunde+konnte+nicht+angelegt+werden", errors), { status: 303 });
+    }
+    return NextResponse.redirect(errorUrl(request, "Kunde+konnte+nicht+angelegt+werden"), { status: 303 });
   }
 
   const tempPassword = `RAIS-${crypto.randomBytes(8).toString("hex")}`;
@@ -61,17 +80,25 @@ export async function POST(request: Request) {
   });
 
   if (authError || !createdUser.user) {
-    return NextResponse.redirect(new URL("/admin/clients/new?error=Benutzer+konnte+nicht+angelegt+werden", request.url), { status: 303 });
+    const { errors } = await rollbackOnboardingArtifacts({ clientId: client.id, logoPath });
+    return NextResponse.redirect(errorUrl(request, "Benutzer+konnte+nicht+angelegt+werden", errors), { status: 303 });
   }
 
   const { error: clientUserError } = await portal.from("client_users").insert({
     user_id: createdUser.user.id,
     client_id: client.id,
     display_name: displayName,
+    can_view_reports: true,
+    can_view_inputs: true,
   });
 
   if (clientUserError) {
-    return NextResponse.redirect(new URL("/admin/clients/new?error=Zuordnung+des+Benutzers+fehlgeschlagen", request.url), { status: 303 });
+    const { errors } = await rollbackOnboardingArtifacts({
+      userId: createdUser.user.id,
+      clientId: client.id,
+      logoPath,
+    });
+    return NextResponse.redirect(errorUrl(request, "Zuordnung+des+Benutzers+fehlgeschlagen", errors), { status: 303 });
   }
 
   const successUrl = new URL("/admin/clients/new", request.url);

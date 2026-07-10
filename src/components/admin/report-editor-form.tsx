@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { ACCEPT_IMAGES } from "@/lib/upload-validation";
 
 type ReportEditorFormProps = {
   clientId: string;
@@ -86,7 +87,7 @@ export function ReportEditorForm({ clientId, action }: ReportEditorFormProps) {
       <div className="space-y-2 border border-grey-200 rounded-[var(--radius)] p-4">
         <p className="text-sm font-medium text-grey-900">Bilder für den Report</p>
         <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
-          <input ref={fileInputRef} name="image" type="file" accept="image/*" className="max-w-sm" />
+          <input ref={fileInputRef} name="image" type="file" accept={ACCEPT_IMAGES} className="max-w-sm" />
           <button type="button" onClick={handleUpload} disabled={isUploading} className="btn btn-ghost">
             {isUploading ? "Lade hoch..." : "Bild hochladen"}
           </button>

@@ -2,6 +2,17 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { FormSchemaField } from "@/lib/types";
 
+export type PortalCapabilities = {
+  canViewReports: boolean;
+  canViewInputs: boolean;
+};
+
+export function resolvePortalHome(capabilities: PortalCapabilities) {
+  if (capabilities.canViewReports) return "/portal/reports";
+  if (capabilities.canViewInputs) return "/portal/inputs";
+  return "/portal/no-access";
+}
+
 export async function requirePortalUser() {
   const supabase = await createClient();
   const portal = supabase.schema("portal");

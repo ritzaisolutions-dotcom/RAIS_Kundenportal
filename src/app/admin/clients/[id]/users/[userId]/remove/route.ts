@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { mutationSucceeded } from "@/lib/mutation-result";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -21,8 +22,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const formData = await request.formData();
   const redirectTo = formData.get("redirect_to") === "/admin/users" ? "/admin/users" : `/admin/clients/${id}?tab=users`;
 
-  await portal.from("client_users").delete().eq("user_id", userId).eq("client_id", id);
+  const { data: deletedRows, error } = await portal.from("client_users").delete().eq("user_id", userId).eq("client_id", id).select("user_id");
 
   const separator = redirectTo.includes("?") ? "&" : "?";
+  if (!mutationSucceeded(deletedRows, error)) {
+    return NextResponse.redirect(new URL(`${redirectTo}${separator}error=Entfernen+fehlgeschlagen`, request.url), { status: 303 });
+  }
   return NextResponse.redirect(new URL(`${redirectTo}${separator}success=Benutzer+entfernt`, request.url), { status: 303 });
 }

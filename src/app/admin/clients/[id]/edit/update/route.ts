@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { IMAGE_EXTENSIONS, IMAGE_MIME_TYPES, MAX_LOGO_BYTES, validateUploadedFile } from "@/lib/upload-validation";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -28,6 +29,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   };
 
   if (logo instanceof File && logo.size > 0) {
+    const logoValidationError = validateUploadedFile(logo, {
+      maxBytes: MAX_LOGO_BYTES,
+      allowedMimeTypes: IMAGE_MIME_TYPES,
+      allowedExtensions: IMAGE_EXTENSIONS,
+    });
+    if (logoValidationError) {
+      return NextResponse.redirect(new URL(`/admin/clients/${id}/edit?error=Logo+ist+ungültig`, request.url), { status: 303 });
+    }
+
     const extension = logo.name.includes(".") ? logo.name.split(".").pop() : "png";
     const logoPath = `${slug}-${Date.now()}.${extension}`;
     const { error: logoError } = await admin.storage.from("logos").upload(logoPath, logo, {

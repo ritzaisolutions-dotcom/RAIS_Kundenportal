@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { IMAGE_EXTENSIONS, IMAGE_MIME_TYPES, MAX_REPORT_IMAGE_BYTES, validateUploadedFile } from "@/lib/upload-validation";
 
 function sanitizeFilename(input: string) {
   return input.replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -28,6 +29,15 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const image = formData.get("image");
   if (!(image instanceof File) || image.size === 0) {
     return NextResponse.json({ error: "Bitte eine Bilddatei auswählen." }, { status: 400 });
+  }
+
+  const imageValidationError = validateUploadedFile(image, {
+    maxBytes: MAX_REPORT_IMAGE_BYTES,
+    allowedMimeTypes: IMAGE_MIME_TYPES,
+    allowedExtensions: IMAGE_EXTENSIONS,
+  });
+  if (imageValidationError) {
+    return NextResponse.json({ error: imageValidationError }, { status: 400 });
   }
 
   const imagePath = `${id}/${Date.now()}-${sanitizeFilename(image.name)}`;

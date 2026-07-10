@@ -1,7 +1,20 @@
 import { NextResponse } from "next/server";
+import { SupabaseClient } from "@supabase/supabase-js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { parseFormSchema } from "@/lib/portal-queries";
+import {
+  MAX_SUBMISSION_FILE_BYTES,
+  MAX_SUBMISSION_TOTAL_BYTES,
+  SUBMISSION_EXTENSIONS,
+  SUBMISSION_MIME_TYPES,
+  validateUploadedFile,
+} from "@/lib/upload-validation";
+
+async function cleanupUploadedFiles(supabase: SupabaseClient, filePaths: string[]) {
+  if (!filePaths.length) return;
+  await supabase.storage.from("submissions").remove(filePaths);
+}
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,8 +27,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   if (!user) return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
 
   const portal = supabase.schema("portal");
-  const { data: clientUser } = await portal.from("client_users").select("client_id").eq("user_id", user.id).maybeSingle();
+  const { data: clientUser } = await portal.from("client_users").select("client_id,can_view_inputs").eq("user_id", user.id).maybeSingle();
   if (!clientUser?.client_id) return NextResponse.redirect(new URL("/login", request.url), { status: 303 });
+  if (!clientUser.can_view_inputs) {
+    return NextResponse.redirect(new URL(`/portal/inputs/${id}?error=Keine+Berechtigung+für+diese+Aktion`, request.url), { status: 303 });
+  }
 
   const { data: inputRequest } = await portal
     .from("input_requests")
@@ -35,6 +51,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const payload: Record<string, string | null> = {};
   const filePaths: string[] = [];
   const validationErrors: string[] = [];
+  let totalUploadedBytes = 0;
 
   if (inputRequest.kind === "freetext") {
     const freetext = String(formData.get("freetext") ?? "").trim();
@@ -52,6 +69,22 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           continue;
         }
         if (file instanceof File && file.size > 0) {
+          const uploadValidationError = validateUploadedFile(file, {
+            maxBytes: MAX_SUBMISSION_FILE_BYTES,
+            allowedMimeTypes: SUBMISSION_MIME_TYPES,
+            allowedExtensions: SUBMISSION_EXTENSIONS,
+          });
+          if (uploadValidationError) {
+            validationErrors.push(`Datei "${field.label}": ${uploadValidationError}`);
+            continue;
+          }
+
+          totalUploadedBytes += file.size;
+          if (totalUploadedBytes > MAX_SUBMISSION_TOTAL_BYTES) {
+            validationErrors.push("Gesamtgröße aller Anhänge überschreitet das erlaubte Limit.");
+            continue;
+          }
+
           const filePath = `${clientUser.client_id}/${id}/${Date.now()}-${file.name}`;
           const { error } = await supabase.storage.from("submissions").upload(filePath, file, {
             contentType: file.type,
@@ -76,6 +109,23 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const extraAttachments = formData.getAll("attachments");
   for (const attachment of extraAttachments) {
     if (!(attachment instanceof File) || attachment.size === 0) continue;
+
+    const uploadValidationError = validateUploadedFile(attachment, {
+      maxBytes: MAX_SUBMISSION_FILE_BYTES,
+      allowedMimeTypes: SUBMISSION_MIME_TYPES,
+      allowedExtensions: SUBMISSION_EXTENSIONS,
+    });
+    if (uploadValidationError) {
+      validationErrors.push(`Datei "${attachment.name}": ${uploadValidationError}`);
+      continue;
+    }
+
+    totalUploadedBytes += attachment.size;
+    if (totalUploadedBytes > MAX_SUBMISSION_TOTAL_BYTES) {
+      validationErrors.push("Gesamtgröße aller Anhänge überschreitet das erlaubte Limit.");
+      continue;
+    }
+
     const filePath = `${clientUser.client_id}/${id}/${Date.now()}-${attachment.name}`;
     const { error } = await supabase.storage.from("submissions").upload(filePath, attachment, {
       contentType: attachment.type,
@@ -89,6 +139,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   if (validationErrors.length > 0) {
+    await cleanupUploadedFiles(supabase, filePaths);
     return NextResponse.redirect(
       new URL(`/portal/inputs/${id}?error=${encodeURIComponent(validationErrors.join(" "))}`, request.url),
       { status: 303 },
@@ -108,6 +159,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     .single();
 
   if (submissionError || !submission) {
+    await cleanupUploadedFiles(supabase, filePaths);
     return NextResponse.redirect(new URL(`/portal/inputs/${id}?error=Antwort+konnte+nicht+gespeichert+werden.`, request.url), {
       status: 303,
     });
@@ -116,6 +168,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const { error: statusError } = await admin.schema("portal").from("input_requests").update({ status: "submitted" }).eq("id", id);
   if (statusError) {
     await admin.schema("portal").from("input_submissions").delete().eq("id", submission.id);
+    await cleanupUploadedFiles(supabase, filePaths);
     return NextResponse.redirect(new URL(`/portal/inputs/${id}?error=Status+konnte+nicht+aktualisiert+werden.`, request.url), {
       status: 303,
     });

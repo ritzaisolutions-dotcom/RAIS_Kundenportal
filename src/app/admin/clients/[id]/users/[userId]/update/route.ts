@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { mutationSucceeded } from "@/lib/mutation-result";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -21,12 +22,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   // Nur bekannte, feste Zielseiten zulassen (kein offener Redirect ueber Nutzereingabe).
   const redirectTo = formData.get("redirect_to") === "/admin/users" ? "/admin/users" : `/admin/clients/${id}?tab=users`;
 
-  await portal
+  const { data: updatedRows, error } = await portal
     .from("client_users")
     .update({ can_view_reports: canViewReports, can_view_inputs: canViewInputs })
     .eq("user_id", userId)
-    .eq("client_id", id);
+    .eq("client_id", id)
+    .select("user_id");
 
   const separator = redirectTo.includes("?") ? "&" : "?";
+  if (!mutationSucceeded(updatedRows, error)) {
+    return NextResponse.redirect(new URL(`${redirectTo}${separator}error=Speichern+fehlgeschlagen`, request.url), { status: 303 });
+  }
   return NextResponse.redirect(new URL(`${redirectTo}${separator}success=Sichtbarkeit+gespeichert`, request.url), { status: 303 });
 }

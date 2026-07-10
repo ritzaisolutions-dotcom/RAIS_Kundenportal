@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { requirePortalUser, parseFormSchema } from "@/lib/portal-queries";
+import { redirect } from "next/navigation";
+import { parseFormSchema, requirePortalUser, resolvePortalHome } from "@/lib/portal-queries";
 import { formatDate } from "@/lib/utils";
 
 const STATUS_LABEL: Record<string, string> = {
@@ -24,7 +25,11 @@ function isOverdue(dueDate: string | null, status: string) {
 }
 
 export default async function PortalInputsPage() {
-  const { supabase, clientId } = await requirePortalUser();
+  const { supabase, clientId, canViewReports, canViewInputs } = await requirePortalUser();
+  if (!canViewInputs) {
+    redirect(resolvePortalHome({ canViewReports, canViewInputs }));
+  }
+
   const portal = supabase.schema("portal");
 
   const { data: requests } = await portal

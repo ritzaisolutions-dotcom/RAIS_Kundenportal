@@ -36,6 +36,11 @@
               "value1": "={{$json.body.record.status}}",
               "operation": "equal",
               "value2": "open"
+            },
+            {
+              "value1": "={{$json.body.old_record.status}}",
+              "operation": "notEqual",
+              "value2": "open"
             }
           ]
         }

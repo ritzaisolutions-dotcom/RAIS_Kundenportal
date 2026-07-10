@@ -146,7 +146,7 @@ h4 {
 /* In @layer base statt ungelayert: ungelayerte Regeln gewinnen in der
    CSS-Cascade IMMER gegen alles in @layer components, unabhaengig von
    Spezifitaet. Als ungelayerte Regel hat dieser Link-Farbdefault jede
-   .btn-*/.chip-*/.sidebar-link-Textfarbe ueberschrieben - bei .btn-primary
+   btn/chip/sidebar-link Textfarbe ueberschrieben - bei .btn-primary
    (orangener Hintergrund) macht das den Button-Text unsichtbar (orange auf
    orange). In @layer base verliert er korrekt gegen @layer components. */
 @layer base {

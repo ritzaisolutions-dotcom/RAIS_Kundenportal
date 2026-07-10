@@ -1,9 +1,14 @@
 import Link from "next/link";
-import { requirePortalUser } from "@/lib/portal-queries";
+import { redirect } from "next/navigation";
+import { requirePortalUser, resolvePortalHome } from "@/lib/portal-queries";
 import { formatDate } from "@/lib/utils";
 
 export default async function PortalReportsPage() {
-  const { supabase, clientId } = await requirePortalUser();
+  const { supabase, clientId, canViewReports, canViewInputs } = await requirePortalUser();
+  if (!canViewReports) {
+    redirect(resolvePortalHome({ canViewReports, canViewInputs }));
+  }
+
   const { data: reports } = await supabase
     .schema("portal")
     .from("status_reports")
