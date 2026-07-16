@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RAIS Testimonial-Vorlage</title>
+<style>
+:root{
+  --brand-orange:#ec6a37;
+  --brand-cloud:#f5f2ec;
+  --brand-linen:#fbf8f3;
+  --brand-pistachio:#3c5a2a;
+  --brand-charcoal:#2f2a24;
+  --brand-stone:#7b746b;
+  --brand-border:#d9d1c7;
+  --paper:#ffffff;
+  --var-red:#c81e1e;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:linear-gradient(180deg,var(--brand-cloud) 0%,#efebe5 100%);color:var(--brand-charcoal);font-family:"Aptos","Segoe UI","Helvetica Neue",Arial,sans-serif;}
+.page{width:210mm;min-height:297mm;margin:12mm auto;padding:18mm;background:var(--paper);box-shadow:0 22px 48px rgba(47,42,36,.12);}
+.topbar{display:grid;grid-template-columns:80px 1fr;gap:16px;align-items:center;margin-bottom:18px;}
+.logo-slot{display:flex;align-items:center;justify-content:center;padding:8px;background:var(--brand-charcoal);border-radius:14px;}
+.logo-slot img{width:100%;height:auto;display:block;}
+.title-block h1{margin:0;font-size:24px;font-family:Georgia,"Times New Roman",serif;}
+.title-block p{margin:4px 0 0;color:var(--brand-stone);font-size:12px;}
+.eyebrow{color:var(--brand-stone);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;}
+.section{margin-top:20px;}
+.section-header{margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--brand-orange);font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brand-charcoal);}
+.card{padding:14px 16px;background:var(--brand-linen);border:1px solid var(--brand-border);border-radius:14px;}
+.var{color:var(--var-red);font-weight:700;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--brand-stone);margin-bottom:4px;}
+.field .fill-line{border-bottom:1px solid var(--brand-border);min-height:22px;padding:2px 4px;font-size:13px;}
+.stars{font-size:22px;color:var(--brand-border);letter-spacing:4px;}
+.review-box{min-height:110px;border:1px dashed var(--brand-border);border-radius:10px;padding:12px;font-size:13px;color:var(--brand-stone);background:#fff;}
+.photo-box{min-height:140px;border:1px dashed var(--brand-border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--brand-stone);text-align:center;background:#fff;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.consent-box{padding:14px 16px;background:#fff8f2;border:1.5px solid var(--brand-orange);border-radius:14px;}
+.consent-box h2{margin:0 0 8px;font-size:13px;color:var(--brand-charcoal);text-transform:uppercase;letter-spacing:.04em;}
+.checkbox-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px;font-size:12.5px;line-height:1.5;}
+.checkbox-row .box{flex:none;width:16px;height:16px;border:1.5px solid var(--brand-charcoal);border-radius:3px;margin-top:2px;}
+.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:16px;}
+.sig-line{border-top:1px solid var(--brand-charcoal);margin-top:40px;padding-top:6px;font-size:11px;color:var(--brand-stone);}
+.legend{margin:18px 0 0;padding:10px 14px;background:#fff4f4;border:1px dashed var(--var-red);border-radius:10px;font-size:11px;}
+.legend b{color:var(--var-red);}
+@page{size:A4;margin:10mm;}
+@media print{ body{background:#fff;} .page{margin:0;box-shadow:none;} .legend{display:none;} }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <header class="topbar">
+    <div class="logo-slot"><img src="RAIS_logo_alleine.svg" alt="RAIS Logo" /></div>
+    <div class="title-block">
+      <div class="eyebrow">Testimonial &amp; Marketing-Freigabe</div>
+      <h1>Ritz AI Solutions &mdash; Kundenstimme</h1>
+      <p>Bitte nach Go-Live ausfüllen. Wird nur mit Ihrer ausdrücklichen Freigabe unten öffentlich verwendet.</p>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="section-header">Angaben zum Unternehmen</div>
+    <div class="card two-col">
+      <div class="field">
+        <label>Name des Unternehmens</label>
+        <div class="fill-line"><span class="var">{{KUNDE_FIRMA}}</span></div>
+      </div>
+      <div class="field">
+        <label>Ansprechpartner / Funktion</label>
+        <div class="fill-line"><span class="var">{{KUNDE_ANSPRECHPARTNER}}</span>, <span class="var">{{FUNKTION}}</span></div>
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Leistungsumfang (was wurde umgesetzt)</label>
+        <div class="fill-line"><span class="var">{{LEISTUNGSUMFANG}}</span> &mdash; z.B. „KI-gestützte Lead-Qualifizierung &amp; Terminierung, Paket 1"</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header">Ihre Bewertung</div>
+    <div class="card">
+      <div class="field">
+        <label>Sternebewertung (1&ndash;5)</label>
+        <div class="stars">★ ★ ★ ★ ★</div>
+      </div>
+      <div class="field">
+        <label>Ihr Erfahrungsbericht (3&ndash;5 Sätze)</label>
+        <div class="review-box">
+          Freitextfeld zum Ausfüllen &mdash; z.B.: Ausgangssituation vor RAIS, was sich seit dem Go-Live verändert hat, konkretes Ergebnis (Zeitersparnis, schnellere Terminierung, weniger verpasste Anfragen), Weiterempfehlung.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="two-col">
+      <div class="card">
+        <div class="section-header" style="border:none;padding:0;margin-bottom:8px;">Foto (optional)</div>
+        <div class="photo-box">Foto des Ansprechpartners oder Firmenlogo hier einfügen</div>
+      </div>
+      <div class="card">
+        <div class="section-header" style="border:none;padding:0;margin-bottom:8px;">Unterschrift</div>
+        <div class="sig-line" style="margin-top:70px;">Name, Datum, Unterschrift</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="consent-box">
+      <h2>Bestätigung zur Marketing-Nutzung</h2>
+      <div class="checkbox-row">
+        <div class="box"></div>
+        <div>Ich/Wir bestätige(n), dass die oben stehende Bewertung, der Firmenname und ggf. das Foto von Ritz AI Solutions zur Außenwerbung genutzt werden dürfen &mdash; u.a. auf Website, LinkedIn, Instagram, YouTube und in Kundenpräsentationen.</div>
+      </div>
+      <div class="checkbox-row">
+        <div class="box"></div>
+        <div>Ich/Wir möchte(n), dass Name und Unternehmen <strong>anonymisiert</strong> dargestellt werden (z.B. „Immobilienmakler, Region <span class="var">{{REGION}}</span>").</div>
+      </div>
+      <div class="sig-grid">
+        <div class="sig-line">Name / Funktion</div>
+        <div class="sig-line">Ort, Datum, Unterschrift</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="legend">
+    <b>Vorlagen-Hinweis:</b> Alle rot markierten <span class="var">{{VARIABLEN}}</span> vor Versand durch echte Kundendaten ersetzen. Logo-Datei "RAIS_logo_alleine.svg" liegt im selben Ordner &mdash; bei Bedarf gegen andere Logo-Variante aus assets/logo austauschen. Dieser Hinweisblock erscheint nicht im Druck/PDF.
+  </div>
+
+</main>
+</body>
+</html>

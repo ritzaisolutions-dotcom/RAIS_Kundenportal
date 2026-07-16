@@ -90,6 +90,7 @@ export async function POST(request: Request) {
     display_name: displayName,
     can_view_reports: true,
     can_view_inputs: true,
+    can_submit_requests: true,
   });
 
   if (clientUserError) {

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ritz AI Solutions – Retainer-Rechnung (Vorlage)</title>
+<style>
+:root{
+  --ink:#1f1c18;
+  --gray:#6b655c;
+  --line:#dedad2;
+  --paper:#ffffff;
+  --var-red:#c81e1e;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:#f4f2ee;color:var(--ink);font-family:"Aptos","Segoe UI","Helvetica Neue",Arial,sans-serif;}
+.page{width:210mm;min-height:297mm;margin:12mm auto;padding:20mm 20mm;background:var(--paper);}
+header.head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--ink);padding-bottom:14px;}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand img{height:34px;width:auto;display:block;}
+.brand .name{font-size:15px;font-weight:700;letter-spacing:.02em;}
+.brand .sub{font-size:10.5px;color:var(--gray);margin-top:2px;}
+.doc-meta{text-align:right;}
+.doc-meta .doctype{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gray);}
+.doc-meta .docnum{font-size:18px;font-weight:700;margin-top:2px;}
+.addr-row{display:flex;justify-content:space-between;gap:24px;margin-top:22px;font-size:12px;line-height:1.55;}
+.addr-row .col{flex:1;}
+.addr-row .label{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gray);margin-bottom:5px;}
+.meta-table{margin-top:20px;width:100%;border-collapse:collapse;font-size:12px;}
+.meta-table td{padding:4px 0;}
+.meta-table td.k{color:var(--gray);width:34%;}
+.var{color:var(--var-red);font-weight:700;}
+table.items{width:100%;border-collapse:collapse;margin-top:24px;font-size:12.5px;}
+table.items thead th{text-align:left;border-bottom:1.5px solid var(--ink);padding:6px 4px 8px;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink);}
+table.items thead th.num{text-align:right;}
+table.items tbody td{padding:10px 4px;border-bottom:1px solid var(--line);vertical-align:top;}
+table.items tbody td.num{text-align:right;white-space:nowrap;}
+.desc-sub{color:var(--gray);font-size:11px;display:block;margin-top:3px;}
+.totals{width:280px;margin-left:auto;margin-top:4px;}
+.totals-row{display:flex;justify-content:space-between;padding:6px 4px;font-size:12.5px;border-bottom:1px solid var(--line);}
+.totals-row.total{border-bottom:none;border-top:1.5px solid var(--ink);margin-top:2px;padding-top:9px;font-size:15px;font-weight:700;}
+.notes{margin-top:26px;font-size:11px;color:var(--gray);line-height:1.6;}
+.notes p{margin:3px 0;}
+.sig-block{margin-top:34px;}
+.sig-line{border-top:1px solid var(--ink);width:70mm;margin-top:26px;padding-top:6px;font-size:10.5px;color:var(--gray);}
+footer.foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--line);font-size:9.5px;color:var(--gray);line-height:1.6;position:absolute;bottom:16mm;left:20mm;right:20mm;}
+.legend{margin:22px 0 0;padding:9px 12px;background:#fff4f4;border:1px dashed var(--var-red);border-radius:8px;font-size:10.5px;}
+.legend b{color:var(--var-red);}
+.page{position:relative;}
+@page{size:A4;margin:10mm;}
+@media print{ body{background:#fff;} .page{margin:0;} .legend{display:none;} }
+</style>
+</head>
+<body>
+<main class="page">
+  <header class="head">
+    <div class="brand">
+      <img src="RAIS_logo_alleine.svg" alt="RAIS Logo" />
+      <div>
+        <div class="name">Ritz AI Solutions</div>
+        <div class="sub">Von-Cohausenstrasse 9 &middot; 56076 Koblenz &middot; kevin@ritz-ai.solutions</div>
+      </div>
+    </div>
+    <div class="doc-meta">
+      <div class="doctype">Retainer-Rechnung</div>
+      <div class="docnum">{{RECHNUNGSNUMMER}}</div>
+    </div>
+  </header>
+
+  <div class="addr-row">
+    <div class="col">
+      <div class="label">Rechnung an</div>
+      <span class="var">{{KUNDENNAME_FIRMA}}</span><br />
+      <span class="var">{{KUNDEN_STRASSE_NR}}</span><br />
+      <span class="var">{{KUNDEN_PLZ_ORT}}</span><br />
+      <span class="var">{{KUNDEN_EMAIL}}</span>
+    </div>
+    <div class="col">
+      <div class="label">Bankverbindung</div>
+      Kevin Ritz, Ritz AI Solutions<br />
+      IBAN DE02 1001 1001 2982 5000 03<br />
+      Verwendungszweck: <span class="var">{{RECHNUNGSNUMMER}}</span><br />
+      Stripe-Abo-Link: einmalig einrichten, läuft danach automatisch jeden Monat.
+    </div>
+  </div>
+
+  <table class="meta-table">
+    <tr><td class="k">Rechnungsdatum</td><td class="var">{{RECHNUNGSDATUM}}</td></tr>
+    <tr><td class="k">Leistungszeitraum</td><td class="var">{{LEISTUNGSZEITRAUM}}</td></tr>
+    <tr><td class="k">Zahlungsziel</td><td>Monatlich am Go-Live-Datum, 14 Tage nach Rechnungsstellung</td></tr>
+  </table>
+
+  <table class="items">
+    <thead>
+      <tr><th style="width:56%">Beschreibung</th><th class="num" style="width:14%">Menge</th><th class="num" style="width:15%">Einzelpreis</th><th class="num" style="width:15%">Betrag</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Monatlicher Retainer &mdash; Betrieb &amp; Support: Hosting, API-Kosten, Monitoring, Fehlerbehebung lt. SLA, Sync, Support<span class="desc-sub">gemäss Angebot <span class="var">{{ANGEBOTSNUMMER}}</span></span></td>
+        <td class="num">1</td>
+        <td class="num"><span class="var">{{BETRAG_EINZELPREIS}}</span></td>
+        <td class="num"><span class="var">{{BETRAG_EINZELPREIS}}</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <div class="totals-row"><span>Nettobetrag</span><span class="var">{{BETRAG_EINZELPREIS}}</span></div>
+    <div class="totals-row"><span>Umsatzsteuer</span><span>entfällt &sect;19 UStG</span></div>
+    <div class="totals-row total"><span>Gesamtbetrag</span><span class="var">{{BETRAG_EINZELPREIS}}</span></div>
+  </div>
+
+  <div class="notes">
+    <p>Gemäss Kleinunternehmerregelung nach &sect;19 UStG wird keine Umsatzsteuer berechnet.</p>
+    <p>Mindestlaufzeit gemäss Angebot. SEPA-Lastschriftmandat einmalig erteilt, danach automatischer monatlicher Einzug.</p>
+  </div>
+
+  
+  <div class="sig-block">
+    <div class="sig-line">Ort, Datum, Unterschrift (sofern vertraglich vorgesehen &mdash; z.B. SEPA-Lastschriftmandat)</div>
+  </div>
+
+
+  <div class="legend"><b>Vorlagen-Hinweis:</b> Rot markierte <span class="var">{{VARIABLEN}}</span> vor Versand ersetzen. Diese Zeile erscheint nicht im Druck/PDF.</div>
+
+  <footer class="foot">
+    Ritz AI Solutions &middot; Kevin Ritz &middot; Von-Cohausenstrasse 9, 56076 Koblenz &middot; +49 151 29755134 &middot; ritz-ai.solutions<br />
+    Steuernummer 22/139/34062 &middot; Kleinunternehmer gemäss &sect;19 UStG &middot; IBAN DE02 1001 1001 2982 5000 03
+  </footer>
+</main>
+</body>
+</html>

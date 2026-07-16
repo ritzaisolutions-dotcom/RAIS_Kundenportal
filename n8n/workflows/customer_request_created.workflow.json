@@ -1,0 +1,194 @@
+{
+  "name": "RAIS Portal - customer_request_created",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "rais-customer-request-created",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Supabase Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "rais-customer-request-created"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.headers['x-portal-secret']}}",
+              "operation": "equal",
+              "value2": "={{$env.N8N_WEBHOOK_SECRET}}"
+            }
+          ]
+        }
+      },
+      "id": "secretCheck",
+      "name": "Secret Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "marco@ritz-ai.solutions",
+        "toEmail": "kevin@ritz-ai.solutions",
+        "subject": "Neue Kundenanfrage im RAIS Portal",
+        "emailType": "html",
+        "message": "={{\"<p>Neue Kundenanfrage im RAIS Portal.</p><ul><li>Betreff: \" + $json.body.record.subject + \"</li><li>Kategorie: \" + $json.body.record.category + \"</li><li>Bereich: \" + $json.body.record.area + \"</li><li>Projekt: \" + $json.body.record.project_name + \"</li><li>Client-ID: \" + $json.body.record.client_id + \"</li></ul><p><a href='https://portal.ritz-ai.solutions/admin/requests/\" + $json.body.record.id + \"'>Zur Anfrage</a></p>\"}}"
+      },
+      "id": "alertKevin",
+      "name": "Alert Kevin",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [730, 200]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "clients",
+        "returnAll": false,
+        "limit": 1,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{$('Supabase Webhook').item.json.body.record.client_id}}"
+            }
+          ]
+        },
+        "options": {
+          "schema": "portal",
+          "columns": "primary_contact_email"
+        }
+      },
+      "id": "loadClientEmail",
+      "name": "Load Client Email",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [730, 380]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.primary_contact_email}}",
+              "operation": "notEmpty"
+            }
+          ]
+        }
+      },
+      "id": "recipientCheck",
+      "name": "Recipient Present",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [960, 380]
+    },
+    {
+      "parameters": {
+        "fromEmail": "marco@ritz-ai.solutions",
+        "toEmail": "={{$json.primary_contact_email}}",
+        "subject": "Ihre Anfrage wurde übermittelt – RAIS Portal",
+        "emailType": "html",
+        "message": "={{\"<p>Guten Tag,</p><p>vielen Dank – wir haben Ihre Anfrage erhalten:</p><p><strong>\" + $('Supabase Webhook').item.json.body.record.subject + \"</strong></p><p>Kategorie: \" + $('Supabase Webhook').item.json.body.record.category + \"<br/>Bereich: \" + $('Supabase Webhook').item.json.body.record.area + \"<br/>Projekt: \" + $('Supabase Webhook').item.json.body.record.project_name + \"</p><p><a href='https://portal.ritz-ai.solutions/portal/requests/\" + $('Supabase Webhook').item.json.body.record.id + \"'>Anfrage im Portal ansehen</a></p><p>Viele Grüße<br/>RAIS</p>\"}}"
+      },
+      "id": "confirmCustomer",
+      "name": "Confirm Customer",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1180, 320]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"error\":\"unauthorized\"}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "unauthorizedResponse",
+      "name": "Unauthorized 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [730, 520]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"error\":\"missing_primary_contact_email\"}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "id": "missingRecipientResponse",
+      "name": "Missing Recipient 422",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1180, 480]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"ok\":true}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "successResponse",
+      "name": "Success 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1400, 300]
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "output": "input1"
+      },
+      "id": "mergeBeforeRespond",
+      "name": "Merge Before Respond",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [1180, 200]
+    }
+  ],
+  "connections": {
+    "Supabase Webhook": {
+      "main": [[{ "node": "Secret Check", "type": "main", "index": 0 }]]
+    },
+    "Secret Check": {
+      "main": [
+        [
+          { "node": "Alert Kevin", "type": "main", "index": 0 },
+          { "node": "Load Client Email", "type": "main", "index": 0 }
+        ],
+        [{ "node": "Unauthorized 401", "type": "main", "index": 0 }]
+      ]
+    },
+    "Alert Kevin": {
+      "main": [[{ "node": "Merge Before Respond", "type": "main", "index": 0 }]]
+    },
+    "Load Client Email": {
+      "main": [[{ "node": "Recipient Present", "type": "main", "index": 0 }]]
+    },
+    "Recipient Present": {
+      "main": [
+        [{ "node": "Confirm Customer", "type": "main", "index": 0 }],
+        [{ "node": "Missing Recipient 422", "type": "main", "index": 0 }]
+      ]
+    },
+    "Confirm Customer": {
+      "main": [[{ "node": "Merge Before Respond", "type": "main", "index": 1 }]]
+    },
+    "Merge Before Respond": {
+      "main": [[{ "node": "Success 200", "type": "main", "index": 0 }]]
+    }
+  }
+}

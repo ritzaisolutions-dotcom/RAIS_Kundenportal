@@ -219,6 +219,7 @@ async function main() {
       landing: resolvePortalHome({
         canViewReports: customer.canViewReports,
         canViewInputs: customer.canViewInputs,
+        canSubmitRequests: true,
       }),
       reports: customer.canViewReports ? "ja" : "nein",
       inputs: customer.canViewInputs ? "ja" : "nein",

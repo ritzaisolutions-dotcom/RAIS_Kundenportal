@@ -8,6 +8,7 @@ type ClientUserRow = {
   display_name: string;
   can_view_reports: boolean;
   can_view_inputs: boolean;
+  can_submit_requests: boolean;
   created_at: string;
   clients: { name: string; slug: string } | null;
 };
@@ -23,7 +24,7 @@ export default async function AdminUsersPage({
 
   const { data: clientUsers } = await portal
     .from("client_users")
-    .select("user_id,client_id,display_name,can_view_reports,can_view_inputs,created_at,clients(name,slug)")
+    .select("user_id,client_id,display_name,can_view_reports,can_view_inputs,can_submit_requests,created_at,clients(name,slug)")
     .order("created_at", { ascending: false });
 
   // E-Mail-Adressen liegen in auth.users, nicht in portal.client_users - dafuer
@@ -93,6 +94,10 @@ export default async function AdminUsersPage({
                   <label className="flex items-center gap-1.5 text-xs text-grey-600 shrink-0">
                     <input type="checkbox" name="can_view_inputs" defaultChecked={row.can_view_inputs} className="!w-4 shrink-0" />
                     Input-Anfragen
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs text-grey-600 shrink-0">
+                    <input type="checkbox" name="can_submit_requests" defaultChecked={row.can_submit_requests ?? true} className="!w-4 shrink-0" />
+                    Anfragen senden
                   </label>
                   <button type="submit" className="btn btn-secondary !text-xs !py-1.5 !px-3 shrink-0">
                     Speichern

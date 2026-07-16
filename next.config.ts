@@ -26,6 +26,13 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Die Dokument-Generierung liest Branding-Assets (Logos) zur Laufzeit per fs aus
+  // docs_vorlagen/05_Branding. Dieser Ordner ist nicht Teil der App und wird von
+  // Vercels File-Tracing sonst NICHT mitgebündelt -> in Prod fehlen die Logos.
+  // Explizit in die Serverless-Function der Generate-Route einschließen.
+  outputFileTracingIncludes: {
+    "/admin/documents/**": ["./docs_vorlagen/05_Branding/**"],
+  },
   async headers() {
     return [
       {

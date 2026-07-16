@@ -4,9 +4,9 @@ import { requirePortalUser, resolvePortalHome } from "@/lib/portal-queries";
 import { formatDate } from "@/lib/utils";
 
 export default async function PortalReportsPage() {
-  const { supabase, clientId, canViewReports, canViewInputs } = await requirePortalUser();
+  const { supabase, clientId, canViewReports, canViewInputs, canSubmitRequests } = await requirePortalUser();
   if (!canViewReports) {
-    redirect(resolvePortalHome({ canViewReports, canViewInputs }));
+    redirect(resolvePortalHome({ canViewReports, canViewInputs, canSubmitRequests }));
   }
 
   const { data: reports } = await supabase

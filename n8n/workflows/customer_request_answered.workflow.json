@@ -1,0 +1,190 @@
+{
+  "name": "RAIS Portal - customer_request_answered",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "rais-customer-request-answered",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook",
+      "name": "Supabase Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "rais-customer-request-answered"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.headers['x-portal-secret']}}",
+              "operation": "equal",
+              "value2": "={{$env.N8N_WEBHOOK_SECRET}}"
+            }
+          ]
+        }
+      },
+      "id": "secretCheck",
+      "name": "Secret Check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "customer_requests",
+        "returnAll": false,
+        "limit": 1,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{$('Supabase Webhook').item.json.body.record.request_id}}"
+            }
+          ]
+        },
+        "options": {
+          "schema": "portal",
+          "columns": "id,client_id,subject,status"
+        }
+      },
+      "id": "loadRequest",
+      "name": "Load Request",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "clients",
+        "returnAll": false,
+        "limit": 1,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{$json.client_id}}"
+            }
+          ]
+        },
+        "options": {
+          "schema": "portal",
+          "columns": "primary_contact_email"
+        }
+      },
+      "id": "loadClientEmail",
+      "name": "Load Client Email",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.primary_contact_email}}",
+              "operation": "notEmpty"
+            }
+          ]
+        }
+      },
+      "id": "recipientCheck",
+      "name": "Recipient Present",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1140, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "marco@ritz-ai.solutions",
+        "toEmail": "={{$json.primary_contact_email}}",
+        "subject": "Antwort zu Ihrer Anfrage – RAIS Portal",
+        "emailType": "html",
+        "message": "={{\"<p>Guten Tag,</p><p>es gibt eine Rückmeldung zu Ihrer Anfrage <strong>\" + $('Load Request').item.json.subject + \"</strong>.</p><p><a href='https://portal.ritz-ai.solutions/portal/requests/\" + $('Load Request').item.json.id + \"'>Im Portal ansehen</a></p><p>Viele Grüße<br/>RAIS</p>\"}}"
+      },
+      "id": "sendEmail",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1360, 240]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"error\":\"unauthorized\"}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "unauthorizedResponse",
+      "name": "Unauthorized 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [700, 480]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"error\":\"missing_primary_contact_email\"}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "id": "missingRecipientResponse",
+      "name": "Missing Recipient 422",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1360, 420]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"ok\":true}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "successResponse",
+      "name": "Success 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1580, 240]
+    }
+  ],
+  "connections": {
+    "Supabase Webhook": {
+      "main": [[{ "node": "Secret Check", "type": "main", "index": 0 }]]
+    },
+    "Secret Check": {
+      "main": [
+        [{ "node": "Load Request", "type": "main", "index": 0 }],
+        [{ "node": "Unauthorized 401", "type": "main", "index": 0 }]
+      ]
+    },
+    "Load Request": {
+      "main": [[{ "node": "Load Client Email", "type": "main", "index": 0 }]]
+    },
+    "Load Client Email": {
+      "main": [[{ "node": "Recipient Present", "type": "main", "index": 0 }]]
+    },
+    "Recipient Present": {
+      "main": [
+        [{ "node": "Send Email", "type": "main", "index": 0 }],
+        [{ "node": "Missing Recipient 422", "type": "main", "index": 0 }]
+      ]
+    },
+    "Send Email": {
+      "main": [[{ "node": "Success 200", "type": "main", "index": 0 }]]
+    }
+  }
+}

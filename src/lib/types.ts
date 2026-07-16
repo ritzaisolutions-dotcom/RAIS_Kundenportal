@@ -12,6 +12,18 @@ export type InputRequestKind = "form" | "freetext";
 
 export type InputRequestStatus = "draft" | "open" | "submitted" | "accepted" | "reopened";
 
+export type CustomerRequestStatus =
+  | "submitted"
+  | "acknowledged"
+  | "rejected"
+  | "revision"
+  | "in_progress"
+  | "completed";
+
+export type CustomerRequestEventKind = "status_change" | "message";
+
+export type CustomerRequestAuthorRole = "customer" | "admin";
+
 export type ReportStatus = "draft" | "published";
 
 export type PortalClient = {

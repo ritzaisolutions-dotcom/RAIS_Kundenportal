@@ -25,9 +25,9 @@ function isOverdue(dueDate: string | null, status: string) {
 }
 
 export default async function PortalInputsPage() {
-  const { supabase, clientId, canViewReports, canViewInputs } = await requirePortalUser();
+  const { supabase, clientId, canViewReports, canViewInputs, canSubmitRequests } = await requirePortalUser();
   if (!canViewInputs) {
-    redirect(resolvePortalHome({ canViewReports, canViewInputs }));
+    redirect(resolvePortalHome({ canViewReports, canViewInputs, canSubmitRequests }));
   }
 
   const portal = supabase.schema("portal");

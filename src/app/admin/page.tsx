@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { requireAdminUser } from "@/lib/portal-queries";
+import { OPEN_CUSTOMER_REQUEST_STATUSES } from "@/lib/customer-request-status";
+import { CustomerRequestStatus } from "@/lib/types";
 
 const WAITING_STATUSES = new Set(["open", "reopened"]);
 const DONE_STATUSES = new Set(["submitted", "accepted"]);
@@ -8,10 +10,15 @@ export default async function AdminHomePage() {
   const { supabase } = await requireAdminUser();
   const portal = supabase.schema("portal");
 
-  const [{ data: clients }, { data: requests }] = await Promise.all([
+  const [{ data: clients }, { data: requests }, { data: customerRequests }] = await Promise.all([
     portal.from("clients").select("id,name,slug,primary_contact_email").order("created_at"),
     portal.from("input_requests").select("id,client_id,status,due_date").neq("status", "draft"),
+    portal.from("customer_requests").select("id,status"),
   ]);
+
+  const openCustomerRequests = (customerRequests ?? []).filter((entry) =>
+    OPEN_CUSTOMER_REQUEST_STATUSES.has(entry.status as CustomerRequestStatus),
+  ).length;
 
   const byClient = new Map<string, { total: number; waiting: number; done: number }>();
   for (const request of requests ?? []) {
@@ -45,12 +52,19 @@ export default async function AdminHomePage() {
         </Link>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="stat-highlight p-6">
           <div className="relative z-10">
-            <p className="text-secondary-200 text-xs uppercase tracking-wide mb-1">Offene Anfragen gesamt</p>
+            <p className="text-secondary-200 text-xs uppercase tracking-wide mb-1">Offene Input-Anfragen</p>
             <p className="text-3xl font-bold text-white">{totalWaiting}</p>
-            <p className="text-secondary-200 text-xs mt-1">warten aktuell auf Kunden-Input</p>
+            <p className="text-secondary-200 text-xs mt-1">warten auf Kunden-Input</p>
+          </div>
+        </div>
+        <div className="stat-highlight p-6">
+          <div className="relative z-10">
+            <p className="text-secondary-200 text-xs uppercase tracking-wide mb-1">Offene Kundenanfragen</p>
+            <p className="text-3xl font-bold text-white">{openCustomerRequests}</p>
+            <p className="text-secondary-200 text-xs mt-1">warten auf RAIS</p>
           </div>
         </div>
         <div className="card card-content">
@@ -61,7 +75,7 @@ export default async function AdminHomePage() {
         <div className="card card-content">
           <p className="text-grey-500 text-xs uppercase tracking-wide mb-1">Ø Erledigungsquote</p>
           <p className="text-3xl font-bold text-grey-900">{avgCompletion !== null ? `${avgCompletion}%` : "–"}</p>
-          <p className="text-grey-500 text-xs mt-1">über alle versendeten Anfragen</p>
+          <p className="text-grey-500 text-xs mt-1">über alle versendeten Input-Anfragen</p>
         </div>
       </div>
 

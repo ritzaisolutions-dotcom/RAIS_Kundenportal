@@ -41,6 +41,15 @@ export const SUBMISSION_EXTENSIONS = [
 export const ACCEPT_IMAGES = IMAGE_EXTENSIONS.join(",");
 export const ACCEPT_SUBMISSION_FILES = SUBMISSION_EXTENSIONS.join(",");
 
+export const DOCUMENT_TEMPLATE_MIME_TYPES = [
+  "text/html",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+] as const;
+
+export const DOCUMENT_TEMPLATE_EXTENSIONS = [".html", ".htm", ".docx"] as const;
+
+export const ACCEPT_DOCUMENT_TEMPLATES = DOCUMENT_TEMPLATE_EXTENSIONS.join(",");
+
 function normalizeExtension(fileName: string) {
   const dotIdx = fileName.lastIndexOf(".");
   if (dotIdx < 0) return "";

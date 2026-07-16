@@ -11,13 +11,16 @@
     "test:rls": "tsx scripts/rls-tenant-isolation-test.ts",
     "test:input-security": "tsx --env-file=.env scripts/input-security-test.ts",
     "test:portal-http": "tsx scripts/portal-http-test.ts",
-    "seed:test-customers": "tsx --env-file=.env scripts/seed-test-permission-customers.ts"
+    "seed:test-customers": "tsx --env-file=.env scripts/seed-test-permission-customers.ts",
+    "seed:document-templates": "tsx --env-file=.env scripts/seed-document-templates.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.110.1",
     "clsx": "^2.1.1",
+    "docxtemplater": "^3.69.0",
     "next": "16.2.10",
+    "pizzip": "^3.2.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",

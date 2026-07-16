@@ -26,6 +26,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const displayName = String(formData.get("display_name") ?? "");
   const canViewReports = formData.get("can_view_reports") === "on";
   const canViewInputs = formData.get("can_view_inputs") === "on";
+  const canSubmitRequests = formData.get("can_submit_requests") === "on";
 
   const tempPassword = `RAIS-${crypto.randomBytes(8).toString("hex")}`;
   const { data: createdUser, error: authError } = await admin.auth.admin.createUser({
@@ -47,6 +48,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     display_name: displayName,
     can_view_reports: canViewReports,
     can_view_inputs: canViewInputs,
+    can_submit_requests: canSubmitRequests,
   });
 
   if (clientUserError) {

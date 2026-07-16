@@ -52,6 +52,7 @@ const findings: Finding[] = [];
 const cleanupUserIds: string[] = [];
 const cleanupRequestIds: string[] = [];
 const cleanupReportIds: string[] = [];
+const cleanupCustomerRequestIds: string[] = [];
 
 function record(level: Finding["level"], message: string) {
   findings.push({ level, message });
@@ -87,6 +88,7 @@ async function main() {
     client: SupabaseClient;
     ownRequestId: string;
     ownReportId: string;
+    ownCustomerRequestId: string;
   };
 
   const contexts: TenantContext[] = [];
@@ -113,6 +115,7 @@ async function main() {
       display_name: `RLS-Test (${client.name})`,
       can_view_reports: true,
       can_view_inputs: true,
+      can_submit_requests: true,
     });
     if (cuError) {
       record("ERROR", `Konnte client_users-Zuordnung fuer ${client.name} nicht anlegen: ${cuError.message}`);
@@ -152,6 +155,44 @@ async function main() {
     }
     cleanupReportIds.push(reportRow.id);
 
+    // + 1 Test-Kundenanfrage (Kunde -> RAIS) im Status "revision", damit auch der
+    //   Kunden-Schreibpfad (Event-Insert nur bei eigener revision-Anfrage) unter
+    //   der PERMISSIVSTEN Bedingung getestet wird: bleibt nur der client_id-Riegel.
+    const { data: crRow, error: crError } = await adminPortal
+      .from("customer_requests")
+      .insert({
+        client_id: client.id,
+        created_by: created.user.id,
+        subject: `RLS-Test-Kundenanfrage (${client.name})`,
+        category: "Allgemein",
+        area: "Portal",
+        project_name: "RLS-Test",
+        description_md: "RLS isolation test - safe to delete.",
+        status: "revision",
+      })
+      .select("id")
+      .single();
+    if (crError || !crRow) {
+      record("ERROR", `Konnte Test-Kundenanfrage fuer ${client.name} nicht anlegen: ${crError?.message}`);
+      continue;
+    }
+    cleanupCustomerRequestIds.push(crRow.id);
+
+    // + 1 Event an der Kundenanfrage, damit es beim Event-Leak-Test ueberhaupt
+    //   eine Zeile zum potenziellen Leaken gibt.
+    const { error: crEventError } = await adminPortal.from("customer_request_events").insert({
+      request_id: crRow.id,
+      kind: "status_change",
+      author_role: "admin",
+      author_id: created.user.id,
+      new_status: "revision",
+      body_md: "RLS isolation test event - safe to delete.",
+    });
+    if (crEventError) {
+      record("ERROR", `Konnte Test-Event fuer ${client.name} nicht anlegen: ${crEventError.message}`);
+      continue;
+    }
+
     const testClient = createClient(SUPABASE_URL!, ANON_KEY!, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
@@ -170,6 +211,7 @@ async function main() {
       client: testClient,
       ownRequestId: reqRow.id,
       ownReportId: reportRow.id,
+      ownCustomerRequestId: crRow.id,
     });
   }
 
@@ -216,6 +258,31 @@ async function main() {
       record("PASS", `${ctx.clientName}: client_users zeigt nur die eigene Zeile.`);
     }
 
+    // Kundenanfragen (Kunde -> RAIS): eigene sichtbar (Positivkontrolle), fremde nicht.
+    const { data: ownCRs } = await portal.from("customer_requests").select("id,client_id");
+    if (!(ownCRs ?? []).some((r) => r.id === ctx.ownCustomerRequestId)) {
+      record("ERROR", `${ctx.clientName}: eigene Test-Kundenanfrage NICHT sichtbar - Positivkontrolle fehlgeschlagen, Testaufbau pruefen.`);
+    }
+    const crLeaks = (ownCRs ?? []).map((r) => r.client_id).filter((cid) => otherClientIds.includes(cid));
+    if (crLeaks.length > 0) {
+      record("LEAK", `${ctx.clientName}: customer_requests liefert ${crLeaks.length} Zeile(n) von fremden Kunden zurueck!`);
+    } else {
+      record("PASS", `${ctx.clientName}: customer_requests zeigt ausschliesslich eigene Zeilen.`);
+    }
+
+    // Event-Thread: darf keine Events fremder Anfragen zurueckgeben (Events haben
+    // keine client_id - Leak-Erkennung ueber die fremden request_ids).
+    const foreignCustomerRequestIds = contexts
+      .filter((o) => o.clientId !== ctx.clientId)
+      .map((o) => o.ownCustomerRequestId);
+    const { data: ownEvents } = await portal.from("customer_request_events").select("id,request_id");
+    const eventLeaks = (ownEvents ?? []).filter((e) => foreignCustomerRequestIds.includes(e.request_id));
+    if (eventLeaks.length > 0) {
+      record("LEAK", `${ctx.clientName}: customer_request_events liefert ${eventLeaks.length} Event(s) fremder Anfragen zurueck!`);
+    } else {
+      record("PASS", `${ctx.clientName}: customer_request_events zeigt nur Events eigener Anfragen.`);
+    }
+
     // 3) Direkter, gezielter Zugriff auf eine KONKRETE fremde Zeilen-ID -
     //    fangt Faelle, die ein `select *`-Leak-Test uebersehen wuerde, weil
     //    manche Policies nur bei ungefiltertem SELECT greifen.
@@ -223,6 +290,11 @@ async function main() {
       const { data: targeted } = await portal.from("input_requests").select("id").eq("id", other.ownRequestId);
       if (targeted && targeted.length > 0) {
         record("LEAK", `${ctx.clientName}: gezielter SELECT auf fremde Anfrage-ID von ${other.clientName} liefert ein Ergebnis!`);
+      }
+
+      const { data: targetedCR } = await portal.from("customer_requests").select("id").eq("id", other.ownCustomerRequestId);
+      if (targetedCR && targetedCR.length > 0) {
+        record("LEAK", `${ctx.clientName}: gezielter SELECT auf fremde Kundenanfrage-ID von ${other.clientName} liefert ein Ergebnis!`);
       }
     }
   }
@@ -261,14 +333,52 @@ async function main() {
       } else {
         record("PASS", `${ctx.clientName}: INSERT fuer fremde Anfrage von ${other.clientName} korrekt abgelehnt.`);
       }
+
+      // UPDATE auf fremde Kundenanfrage (die fremde Anfrage steht auf "revision",
+      // also greift nur noch der client_id-Riegel der Update-Policy).
+      const { data: crUpdated, error: crUpdateError } = await portal
+        .from("customer_requests")
+        .update({ status: "submitted" })
+        .eq("id", other.ownCustomerRequestId)
+        .select("id");
+      if (crUpdateError) {
+        record("PASS", `${ctx.clientName}: UPDATE auf fremde Kundenanfrage von ${other.clientName} korrekt abgelehnt (${crUpdateError.message}).`);
+      } else if (crUpdated && crUpdated.length > 0) {
+        record("LEAK", `${ctx.clientName}: UPDATE auf fremde Kundenanfrage von ${other.clientName} hat tatsaechlich eine Zeile veraendert!`);
+      } else {
+        record("PASS", `${ctx.clientName}: UPDATE auf fremde Kundenanfrage von ${other.clientName} betraf 0 Zeilen (RLS greift).`);
+      }
+
+      // INSERT eines Kunden-Events an fremder Anfrage - muss abgelehnt werden.
+      const { data: crEventInserted, error: crEventInsertError } = await portal
+        .from("customer_request_events")
+        .insert({
+          request_id: other.ownCustomerRequestId,
+          kind: "message",
+          author_role: "customer",
+          author_id: ctx.userId,
+          body_md: "RLS-LEAK-TEST-SHOULD-NOT-APPLY",
+        })
+        .select("id");
+      if (!crEventInsertError && crEventInserted && crEventInserted.length > 0) {
+        record("LEAK", `${ctx.clientName}: INSERT eines Events an fremder Kundenanfrage von ${other.clientName} wurde akzeptiert!`);
+        await adminPortal.from("customer_request_events").delete().eq("id", crEventInserted[0].id);
+      } else {
+        record("PASS", `${ctx.clientName}: INSERT eines Events an fremder Kundenanfrage von ${other.clientName} korrekt abgelehnt.`);
+      }
     }
   }
 
   console.log("\n== Aufraeumen ==\n");
   for (const id of cleanupRequestIds) await adminPortal.from("input_requests").delete().eq("id", id);
   for (const id of cleanupReportIds) await adminPortal.from("status_reports").delete().eq("id", id);
+  // Kundenanfragen VOR den Nutzern loeschen: customer_requests.created_by referenziert
+  // auth.users ohne ON DELETE, sonst blockiert die FK das Loeschen. Events cascaden mit.
+  for (const id of cleanupCustomerRequestIds) await adminPortal.from("customer_requests").delete().eq("id", id);
   for (const id of cleanupUserIds) await admin.auth.admin.deleteUser(id);
-  console.log(`Aufgeraeumt: ${cleanupRequestIds.length} Test-Anfragen, ${cleanupReportIds.length} Test-Reports, ${cleanupUserIds.length} Testnutzer.\n`);
+  console.log(
+    `Aufgeraeumt: ${cleanupRequestIds.length} Test-Anfragen, ${cleanupReportIds.length} Test-Reports, ${cleanupCustomerRequestIds.length} Test-Kundenanfragen, ${cleanupUserIds.length} Testnutzer.\n`,
+  );
 
   const leaks = findings.filter((f) => f.level === "LEAK");
   const errors = findings.filter((f) => f.level === "ERROR");

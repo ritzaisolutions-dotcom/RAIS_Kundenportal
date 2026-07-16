@@ -10,7 +10,7 @@ select
 from information_schema.columns
 where table_schema = 'portal'
   and table_name = 'client_users'
-  and column_name in ('can_view_reports', 'can_view_inputs')
+  and column_name in ('can_view_reports', 'can_view_inputs', 'can_submit_requests')
 order by column_name;
 
 -- 2) Ensure helper functions exist.
@@ -20,7 +20,7 @@ select
 from pg_proc p
 join pg_namespace n on n.oid = p.pronamespace
 where n.nspname = 'portal'
-  and p.proname in ('can_view_reports', 'can_view_inputs')
+  and p.proname in ('can_view_reports', 'can_view_inputs', 'can_submit_requests')
 order by p.proname;
 
 -- 3) Ensure policies include permission functions where expected.
@@ -32,7 +32,7 @@ select
   with_check
 from pg_policies
 where schemaname = 'portal'
-  and tablename in ('status_reports', 'input_requests', 'input_submissions')
+  and tablename in ('status_reports', 'input_requests', 'input_submissions', 'customer_requests', 'customer_request_events', 'document_templates', 'document_generations')
 order by tablename, policyname;
 
 -- 4) Ensure anon no longer has portal access.

@@ -44,7 +44,7 @@ export default async function AdminClientDetailPage({
     portal.from("input_requests").select("id,title,status,due_date,created_at").eq("client_id", id).order("created_at", { ascending: false }),
     portal
       .from("client_users")
-      .select("display_name,user_id,created_at,can_view_reports,can_view_inputs")
+      .select("display_name,user_id,created_at,can_view_reports,can_view_inputs,can_submit_requests")
       .eq("client_id", id)
       .order("created_at", { ascending: false }),
   ]);
@@ -167,6 +167,10 @@ export default async function AdminClientDetailPage({
                   <label className="flex items-center gap-1.5 text-xs text-grey-600 shrink-0">
                     <input type="checkbox" name="can_view_inputs" defaultChecked={clientUser.can_view_inputs} className="!w-4 shrink-0" />
                     Input-Anfragen
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs text-grey-600 shrink-0">
+                    <input type="checkbox" name="can_submit_requests" defaultChecked={clientUser.can_submit_requests ?? true} className="!w-4 shrink-0" />
+                    Anfragen senden
                   </label>
                   <button type="submit" className="btn btn-secondary !text-xs !py-1.5 !px-3 shrink-0">
                     Speichern
