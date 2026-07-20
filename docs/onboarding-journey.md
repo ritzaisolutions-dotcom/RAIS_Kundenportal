@@ -324,11 +324,13 @@ Nach der Onboarding-Session im Portal bereitstellen:
 | # | Aktion | Status |
 |---|--------|--------|
 | 1 | Report „So liefern Sie Ihre Unterlagen“ veröffentlichen | `published` |
-| 2 | Input „M365-Administrator & Tenant-ID“ veröffentlichen | `open` |
+| 2 | Input „M365-Administrator & Tenant-ID“ / „Microsoft Graph / M365 Zugang“ veröffentlichen | `open` |
 | 3 | Input „Postfach-Adressen bestätigen“ veröffentlichen | `open` |
-| 4 | Weitere Inputs als `draft` vorbereiten | `draft` |
+| 4 | Weitere Inputs als `draft` vorbereiten (E-Mail-Texte, Logos, Kalibrierung, Termine, Mitarbeiter, KPIs) | `draft` |
 
-Optionaler SQL-Seed: [`seed-onboarding-starter.sql`](./seed-onboarding-starter.sql) (Client-Slug anpassen).
+Admin kann Vorlagen über den Form-Builder laden (`src/lib/onboarding-input-templates.ts`).
+
+Optionaler SQL-Seed: [`seed-onboarding-starter.sql`](./seed-onboarding-starter.sql) (Client-Slug anpassen). Haller-Vollpaket: [`seed-haller.sql`](./seed-haller.sql).
 
 ---
 
